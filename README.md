@@ -1,6 +1,5 @@
 # SVG Activity Starter
 A project for making activities/animations with SVGs to either be used inside of a module or as a stand alone page. For documentation on specifics of SVGs, look up [SVG Activity Components](https://github.com/cdig/svg-activity-components). To get started, download a copy of this project.
-https://github.com/cdig/svg-activity-starter/edit/master/README.md#
 
 ## Steps to getting an SVG up and running.
 - Download project
