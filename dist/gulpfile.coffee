@@ -15,6 +15,7 @@ gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_using = require "gulp-using"
 gulp_util = require "gulp-util"
+merge = require "merge2"
 main_bower_files = require "main-bower-files"
 run_sequence = require "run-sequence"
 path_exists = require("path-exists").sync
@@ -31,8 +32,7 @@ fileContents = (filePath, file)->
 logAndKillError = (err)->
   beepbeep()
   console.log gulp_util.colors.bgRed("\n## Error ##")
-  console.log gulp_util.colors.red err.message
-  console.log ""
+  console.log gulp_util.colors.red err.message + "\n"
   gulp_notify.onError(
     emitError: true
     icon: false
@@ -46,8 +46,7 @@ logAndKillError = (err)->
 paths =
   coffee:
     source: [
-      "bower_components/**/pack/**/*.coffee"
-      "source/activity-start.coffee"
+      "system/activity-start.coffee"
       ]
     watch: "{bower_components,source}/**/*.coffee"
   dev: [
@@ -58,7 +57,7 @@ paths =
     pack: "bower_components/**/pack/**/*.html"
   svg_activity_coffee: 
     source: [
-      "source/activity-begin.coffee"
+      "system/activity-begin.coffee"
       "source/activity/**/*.coffee"
       ]
     watch: "{source}/activity/**/*.coffee"
@@ -106,7 +105,7 @@ gulp.task "coffee", ()->
       match: "**/*.js"
     .pipe gulp_notify
       title: "👍"
-      message: "JS/Coffee compiled successfully"
+      message: "Coffee"
 
 gulp.task "libs", ()->
   sourceMaps = []
@@ -126,7 +125,7 @@ gulp.task "libs", ()->
     .pipe gulp.dest "public/libs"
 
 gulp.task "svg-activity-coffee", ()->
-  json = JSON.parse(fs.readFileSync('./svg-activity.json'))
+  json = JSON.parse(fs.readFileSync('./source/svg-activity.json'))
   gulp.src paths.svg_activity_coffee.source
     # .pipe gulp_using() # Uncomment for debug
     .pipe gulp_sourcemaps.init()
@@ -140,7 +139,7 @@ gulp.task "svg-activity-coffee", ()->
       match: "**/*.js"
     .pipe gulp_notify
       title: "👍"
-      message: "JS/Coffee compiled successfully"
+      message: "Activity compiled"
 
 
 
@@ -181,6 +180,7 @@ gulp.task "serve", ()->
 
 gulp.task "default", ["coffee","svg-activity-coffee", "dev", "kit", "sass", "serve"], ()->
   gulp.watch paths.coffee.watch, ["coffee"]
+  gulp.watch paths.svg_activity_coffee.watch, ["svg-activity-coffee"]
   gulp.watch paths.dev, ["dev"]
   gulp.watch paths.kit.watch, ["kit"]
   gulp.watch paths.sass.watch, ["sass"]
@@ -214,11 +214,18 @@ gulp.task "kit", ["libs"], ()->
 
 ###################################################################################################
 
+expandCurlPath = (p)->
+  "curl -fsS https://raw.githubusercontent.com/cdig/svg-activity-starter/dist/#{p} > #{p}"
 
-sortObjectKeys = (unsorted)->
-  sorted = {}
-  sorted[k] = unsorted[k] for k in Object.keys(unsorted).sort()
-  return sorted
+updateCmds = [
+  expandCurlPath "package.json"
+  expandCurlPath "gulpfile.coffee"
+  expandCurlPath ".gitignore"
+]
+
+
+
+gulp.task 'update', gulp_shell.task updateCmds
 
 
 

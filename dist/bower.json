@@ -1,22 +1,14 @@
 {
   "name": "svg-standalone",
-  "description": "Svg Standalone project",
-  "authors": [
-    "Sean Lynch <sean.zo.lynch@gmail.com>"
-  ],
-  "main": [
-  ],
-  "ignore": [
-    "**/.*"
-  ],
+  "description": "SVG standalone project",
   "dependencies": {
     "take-and-make": "cdig/take-and-make#v2",
     "cd-library": "cdig/cd-library",
     "svg-activity-components": "cdig/svg-activity-components",
-    "flow-arrows": "cdig/flow-arrows",
     "cd-reset": "cdig/cd-reset"
-
   },
-  "license": "MIT",
+  "main": [],
+  "ignore": [],
+  "license": "UNLICENSED",
   "private": true
 }

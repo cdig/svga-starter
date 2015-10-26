@@ -23,6 +23,7 @@
     "gulp-replace": "^0.5.4",
     "gulp-sass": "^2.0.4",
     "gulp-shell": "^0.4.3",
+    "gulp-svgmin": "^1.2.0",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-using": "0.0.x",
     "gulp-util": "^3.0.6",
