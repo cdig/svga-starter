@@ -47,7 +47,7 @@ paths =
     source: [
       "system/activity-start.coffee"
       ]
-    watch: "{bower_components,source}/**/*.coffee"
+    watch: "{bower_components,system}/**/*.coffee"
   dev: [
     "dev/*/dist/**/*.*"
     "dev/*/bower.json"
@@ -59,7 +59,7 @@ paths =
       "system/activity-begin.coffee"
       "source/activity/**/*.coffee"
       ]
-    watch: "{source}/activity/**/*.coffee"
+    watch: "source/activity/**/*.coffee"
   libs:
     source: [
       "public/libs/angular/angular*.js"
@@ -91,7 +91,6 @@ gulp.task "dev", ()->
   
 
 gulp.task "coffee", ()->
-  gulp
   gulp.src paths.coffee.source
     # .pipe gulp_using() # Uncomment for debug
     .pipe gulp_sourcemaps.init()
