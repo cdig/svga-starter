@@ -15,7 +15,6 @@ gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_using = require "gulp-using"
 gulp_util = require "gulp-util"
-merge = require "merge2"
 main_bower_files = require "main-bower-files"
 run_sequence = require "run-sequence"
 path_exists = require("path-exists").sync
