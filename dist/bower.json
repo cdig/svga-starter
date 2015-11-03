@@ -3,9 +3,9 @@
   "description": "SVG standalone project",
   "dependencies": {
     "take-and-make": "cdig/take-and-make#v2",
-    "cd-library": "cdig/cd-library",
-    "svg-activity-components": "cdig/svg-activity-components",
-    "cd-reset": "cdig/cd-reset"
+    "cd-library": "cdig/cd-library#v2",
+    "svg-activity-components": "cdig/svg-activity-components#v2",
+    "cd-reset": "cdig/cd-reset#v2"
   },
   "main": [],
   "ignore": [],
