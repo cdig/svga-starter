@@ -15,6 +15,7 @@ gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_using = require "gulp-using"
 gulp_util = require "gulp-util"
+gulp_insert = require "gulp-insert"
 main_bower_files = require "main-bower-files"
 run_sequence = require "run-sequence"
 path_exists = require("path-exists").sync
@@ -54,6 +55,15 @@ paths =
   ]
   html:
     pack: "bower_components/**/pack/**/*.html"
+  svg:
+    source: [
+      "source/assets/**/*.svg"
+      ]
+    watch: "source/assets/**/*.svg"
+  svg_sass:
+    source: [
+      "source/activity/**/*.scss"]
+    watch: "source/activity/**/*.scss"
   svg_activity_coffee: 
     source: [
       "system/activity-begin.coffee"
@@ -122,24 +132,6 @@ gulp.task "libs", ()->
     .on "error", logAndKillError
     .pipe gulp.dest "public/libs"
 
-gulp.task "svg-activity-coffee", ()->
-  json = JSON.parse(fs.readFileSync('./source/svg-activity.json'))
-  gulp.src paths.svg_activity_coffee.source
-    # .pipe gulp_using() # Uncomment for debug
-    .pipe gulp_sourcemaps.init()
-    .pipe gulp_concat "#{json.name}.coffee"
-    .pipe gulp_replace "%activity_name", json.name
-    .pipe gulp_coffee()
-    .on "error", logAndKillError
-    .pipe gulp_sourcemaps.write() # TODO: Don't write sourcemaps in production
-    .pipe gulp.dest "public/libs/activity/"
-    .pipe browser_sync.stream
-      match: "**/*.js"
-    .pipe gulp_notify
-      title: "👍"
-      message: "Activity compiled"
-
-
 
 
 gulp.task "sass", ()->
@@ -176,12 +168,16 @@ gulp.task "serve", ()->
     ui: false
 
 
-gulp.task "default", ["coffee","svg-activity-coffee", "dev", "kit", "sass", "serve"], ()->
+gulp.task "default", ["coffee","svg-activity-coffee","svg-compile", "dev", "kit", "sass", "serve"], ()->
   gulp.watch paths.coffee.watch, ["coffee"]
   gulp.watch paths.svg_activity_coffee.watch, ["svg-activity-coffee"]
+  gulp.watch paths.svg.watch, ["svg-compile"]
+  gulp.watch paths.svg_sass.watch, ["svg-compile"]
   gulp.watch paths.dev, ["dev"]
   gulp.watch paths.kit.watch, ["kit"]
   gulp.watch paths.sass.watch, ["sass"]
+  gulp.watch("public/**/*.svg").on 'change', browser_sync.reload
+
 
 
 gulp.task "kit", ["libs"], ()->
@@ -209,7 +205,43 @@ gulp.task "kit", ["libs"], ()->
       title: "👍"
       message: "HTML"
 
+gulp.task "svg-activity-coffee", ()->
+  json = JSON.parse(fs.readFileSync('./source/svg-activity.json'))
+  gulp.src paths.svg_activity_coffee.source
+    # .pipe gulp_using() # Uncomment for debug
+    .pipe gulp_sourcemaps.init()
+    .pipe gulp_concat "#{json.name}.coffee"
+    .pipe gulp_replace "%activity_name", json.name
+    .pipe gulp_coffee()
+    .on "error", logAndKillError
+    .pipe gulp_sourcemaps.write() # TODO: Don't write sourcemaps in production
+    .pipe gulp.dest "public/libs/activity/"
+    .pipe browser_sync.stream
+      match: "**/*.js"
+    .pipe gulp_notify
+      title: "👍"
+      message: "Activity compiled"
 
+gulp.task "svg-compile", ()->
+  css = gulp.src paths.svg_sass.source 
+    .pipe gulp_concat "styles.scss"
+    .pipe gulp_sass
+      errLogToConsole: true
+      outputStyle: "compressed"
+      precision: 1
+    .on "error", logAndKillError
+    .pipe gulp_insert.prepend("<style>")
+    .pipe gulp_insert.append("</style>")
+  gulp.src paths.svg.source
+    .pipe gulp_replace "<defs>", "<defs><!-- bower:css --><!-- endinject -->"
+    .pipe gulp_inject css, name: "bower", transform: fileContents
+    .pipe gulp.dest "public"
+    .pipe browser_sync.stream 
+      match: "public/**/*.svg"
+    .pipe gulp_notify
+      title: "👍"
+      message: "SVG Compiled"
+    
 ###################################################################################################
 
 expandCurlPath = (p)->
