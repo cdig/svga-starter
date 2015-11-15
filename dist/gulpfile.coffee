@@ -47,8 +47,9 @@ paths =
   coffee:
     source: [
       "system/activity-start.coffee"
+      "source/coffee/**/*.coffee"
       ]
-    watch: "{bower_components,system}/**/*.coffee"
+    watch: "{bower_components,system, source/coffee}/**/*.coffee"
   dev: [
     "dev/*/dist/**/*.*"
     "dev/*/bower.json"
