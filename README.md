@@ -8,7 +8,7 @@ A project for making activities/animations with SVGs to either be used inside of
   bower update
   npm install
 ```
-- Place SVG file you're workign with into *public* directory
+- Place SVG file you're working with into *source/assets* directory
 - Edit svg-activity.json's ```name``` property
   - Set this name to be whatever you want it to be for the SVG. 
   - **Note** This is what the SVG will be named in the future. This includes how you reference it in the HTML. If you change the name of the SVG after compilation, make sure to delete any files created as a result as this could lead to conflicts.
