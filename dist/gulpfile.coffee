@@ -1,5 +1,6 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
+chalk = require "chalk"
 del = require "del"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
@@ -14,7 +15,6 @@ gulp_sass = require "gulp-sass"
 gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_using = require "gulp-using"
-gulp_util = require "gulp-util"
 gulp_insert = require "gulp-insert"
 main_bower_files = require "main-bower-files"
 run_sequence = require "run-sequence"
@@ -31,8 +31,8 @@ fileContents = (filePath, file)->
 
 logAndKillError = (err)->
   beepbeep()
-  console.log gulp_util.colors.bgRed("\n## Error ##")
-  console.log gulp_util.colors.red err.message + "\n"
+  console.log chalk.bgRed("\n## Error ##")
+  console.log chalk.red err.message + "\n"
   gulp_notify.onError(
     emitError: true
     icon: false
@@ -65,7 +65,7 @@ paths =
     source: [
       "source/activity/**/*.scss"]
     watch: "source/activity/**/*.scss"
-  svg_activity_coffee: 
+  svg_activity_coffee:
     source: [
       "system/activity-begin.coffee"
       "source/activity/**/*.coffee"
@@ -76,7 +76,7 @@ paths =
       "public/libs/angular/angular*.js"
       "public/libs/take-and-make/dist/take-and-make.js"
       "public/libs/**/*.*"
-    ]      
+    ]
   kit:
     source: [
       "source/index.kit"
@@ -88,7 +88,7 @@ paths =
       "bower_components/**/pack/**/vars.scss"
       "bower_components/**/pack/**/*.scss"
     ]
-    watch: "{bower_components}/**/*.scss" 
+    watch: "{bower_components}/**/*.scss"
     watch: "{source}/**/*.scss"
 
 gulp.task "dev:copy", ()->
@@ -224,7 +224,7 @@ gulp.task "svg-activity-coffee", ()->
       message: "Activity compiled"
 
 gulp.task "svg-compile", ()->
-  css = gulp.src paths.svg_sass.source 
+  css = gulp.src paths.svg_sass.source
     .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
       errLogToConsole: true
@@ -237,7 +237,7 @@ gulp.task "svg-compile", ()->
     .pipe gulp_replace "<defs>", "<defs><!-- bower:css --><!-- endinject -->"
     .pipe gulp_inject css, name: "bower", transform: fileContents
     .pipe gulp.dest "public"
-    .pipe browser_sync.stream 
+    .pipe browser_sync.stream
       match: "public/**/*.svg"
     .pipe gulp_notify
       title: "👍"
@@ -263,5 +263,3 @@ gulp.task 'update', gulp_shell.task updateCmds
 
 
 ###################################################################################################
-
-
