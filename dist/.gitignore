@@ -49,6 +49,6 @@ secrets.yml
 # Other Stuff We Don't Want #
 ################################
 bower_components
-dev
+/dev
 node_modules
-resources
+/resources
