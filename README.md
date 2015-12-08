@@ -6,7 +6,7 @@ A project for making activities/animations with SVGs to either be used inside of
 - Run setup commands
 ```
   npm install
-  bower updatet
+  bower update
 ```
 - Place SVG file you're working with into *source/assets* directory
 - Edit svg-activity.json's ```name``` property
