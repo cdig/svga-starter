@@ -14,7 +14,6 @@
     "gulp-concat": "latest",
     "gulp-inject": "latest",
     "gulp-insert": "latest",
-    "gulp-json-editor": "latest",
     "gulp-kit": "latest",
     "gulp-notify": "latest",
     "gulp-replace": "latest",
