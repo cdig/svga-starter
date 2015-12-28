@@ -9,6 +9,7 @@ gulp_concat = require "gulp-concat"
 gulp_inject = require "gulp-inject"
 gulp_json_editor = require "gulp-json-editor"
 gulp_kit = require "gulp-kit"
+gulp_rename = require "gulp-rename"
 gulp_notify = require "gulp-notify"
 gulp_replace = require "gulp-replace"
 gulp_sass = require "gulp-sass"
@@ -21,6 +22,7 @@ run_sequence = require "run-sequence"
 path_exists = require("path-exists").sync
 fs = require('fs')
 
+assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
 
 gulp_notify.logLevel(0)
 gulp_notify.on "click", ()->
@@ -44,23 +46,26 @@ logAndKillError = (err)->
 
 
 paths =
+  assets:
+    public: "public/**/*.{#{assetTypes}}"
+    source: [
+      "source/**/*.{#{assetTypes}}"
+      "bower_components/*/pack/**/*.{#{assetTypes}}"
+    ]  
   coffee:
     source: [
       "system/activity-start.coffee"
-      "source/coffee/**/*.coffee"
-      ]
-    watch: "{bower_components,system, source/coffee}/**/*.coffee"
-  dev: [
-    "dev/*/dist/**/*.*"
-    "dev/*/bower.json"
-  ]
+      "source/standalone/**/*.coffee"
+    ]
+    watch: "{bower_components,system,source/coffee}/**/*.coffee"
+  dev: "dev/**/*"
   html:
     pack: "bower_components/**/pack/**/*.html"
   svg:
     source: [
-      "source/assets/**/*.svg"
-      ]
-    watch: "source/assets/**/*.svg"
+      "source/**/*.svg"
+    ]    
+    watch: "source/**/*.svg"
   svg_sass:
     source: [
       "source/activity/**/*.scss"]
@@ -73,32 +78,29 @@ paths =
     watch: "source/activity/**/*.coffee"
   libs:
     source: [
-      "public/libs/angular/angular*.js"
-      "public/libs/take-and-make/dist/take-and-make.js"
-      "public/libs/**/*.*"
+      "public/_libs/bower/take-and-make/dist/take-and-make.js"
+      "public/_libs/**/*"
+      "public/activity/**/*.js"
     ]
   kit:
     source: [
       "source/index.kit"
       # TODO: figure out how to add Kit/HTML components from Asset Packs
     ]
-    watch: "{source}/**/*.{kit,html}"
-  sass:
+    watch: "{source,bower_components}/**/*.{kit,html}"
+  scss:
     source: [
       "bower_components/**/pack/**/vars.scss"
       "bower_components/**/pack/**/*.scss"
+      "source/standalone/**/*.scss"
     ]
-    watch: "{bower_components}/**/*.scss"
-    watch: "{source}/**/*.scss"
-
-gulp.task "dev:copy", ()->
-  gulp.src paths.dev
-    .on "error", logAndKillError
-    .pipe gulp.dest "bower_components"
+  watch: "{bower_components, source}/**/*.scss"
 
 
-gulp.task "dev", ()->
-  run_sequence "dev:copy", "kit"
+
+gulp.task "dev", gulp_shell.task [
+  'if [ -d "dev" ]; then rsync --exclude "*/.git/" --delete -ar dev/* bower_components; fi'
+]
   
 
 gulp.task "coffee", ()->
@@ -115,6 +117,7 @@ gulp.task "coffee", ()->
     .pipe gulp_notify
       title: "👍"
       message: "Coffee"
+
 
 gulp.task "libs", ()->
   sourceMaps = []
@@ -135,8 +138,8 @@ gulp.task "libs", ()->
 
 
 
-gulp.task "sass", ()->
-  gulp.src paths.sass.source.concat main_bower_files "**/*.scss"
+gulp.task "scss", ()->
+  gulp.src paths.scss.source.concat main_bower_files "**/*.scss"
     # .pipe gulp_using() # Uncomment for debug
     .pipe gulp_sourcemaps.init()
     .pipe gulp_concat "styles.scss"
@@ -158,8 +161,20 @@ gulp.task "sass", ()->
       message: "SCSS"
 
 # Thank me later ;)
-gulp.task "scss", ["sass"]
+gulp.task "sass", ["scss"]
 
+gulp.task "assets", ()->
+  gulp.src paths.assets.source
+    # .pipe gulp_using() # Uncomment for debug
+    .pipe gulp_rename (path)->
+      path.dirname = path.dirname.replace /.*\/pack\//, ''
+      path
+    .pipe gulp.dest "public"
+    .pipe browser_sync.stream
+      match: "**/*.{#{assetTypes}}"
+    .pipe gulp_notify
+      title: "👍"
+      message: "Assets"
 
 gulp.task "serve", ()->
   browser_sync.init
@@ -169,19 +184,41 @@ gulp.task "serve", ()->
     ui: false
 
 
-gulp.task "default", ["coffee","svg-activity-coffee","svg-compile", "dev", "kit", "sass", "serve"], ()->
+gulp.task "default", ["coffee","svg-activity-coffee","assets", "svg-compile", "dev", "kit", "sass"], ()->
   gulp.watch paths.coffee.watch, ["coffee"]
   gulp.watch paths.svg_activity_coffee.watch, ["svg-activity-coffee"]
   gulp.watch paths.svg.watch, ["svg-compile"]
   gulp.watch paths.svg_sass.watch, ["svg-compile"]
   gulp.watch paths.dev, ["dev"]
   gulp.watch paths.kit.watch, ["kit"]
-  gulp.watch paths.sass.watch, ["sass"]
+  gulp.watch paths.scss.watch, ["scss"]
   gulp.watch("public/**/*.svg").on 'change', browser_sync.reload
+  run_sequence "serve" # Must come last
+
+gulp.task "libs:bower", ()->
+  sourceMaps = []
+  bowerWithMin = main_bower_files "**/*.{css,js}"
+    .map (path)->
+      minPath = path.replace /.([^.]+)$/g, ".min.$1" # Check for minified version
+      if path_exists minPath
+        mapPath = minPath + ".map"
+        sourceMaps.push mapPath if path_exists mapPath
+        return minPath
+      else
+        return path
+  gulp.src bowerWithMin.concat(sourceMaps), base: "bower_components/"
+    # .pipe gulp_using() # Uncomment for debug
+    .on "error", logAndKillError
+    .pipe gulp.dest "public/_libs/bower"
 
 
+gulp.task "libs:source", ()->
+  gulp.src "source/**/*.js"
+    # .pipe gulp_using() # Uncomment for debug
+    .on "error", logAndKillError
+    .pipe gulp.dest "public/_libs/source"
 
-gulp.task "kit", ["libs"], ()->
+gulp.task "kit", ["libs:bower", "libs:source"], ()->
   # This grabs .js.map too, but don't worry, they aren't injected
   libs = gulp.src paths.libs.source, read: false
   html = gulp.src main_bower_files "**/*.{html}"
@@ -190,7 +227,7 @@ gulp.task "kit", ["libs"], ()->
   # libs.pipe(gulp_using()) # Uncomment for debug
   # html.pipe(gulp_using()) # Uncomment for debug
   # pack.pipe(gulp_using()) # Uncomment for debug
-
+  
   gulp.src paths.kit.source
     # .pipe gulp_using() # Uncomment for debug
     .pipe gulp_kit()
@@ -198,10 +235,10 @@ gulp.task "kit", ["libs"], ()->
     .pipe gulp_inject libs, name: "bower", ignorePath: "/public/", addRootSlash: false
     .pipe gulp_inject html, name: "bower", transform: fileContents
     .pipe gulp_inject pack, name: "pack", transform: fileContents
-    .pipe gulp_replace "<script src=\"libs", "<script defer src=\"libs"
+    .pipe gulp_replace "<script src=\"", "<script defer src=\""
     .pipe gulp.dest "public"
     .pipe browser_sync.stream
-      match: "**/*.html"
+      match: "**/*.{css,html,js}"
     .pipe gulp_notify
       title: "👍"
       message: "HTML"
@@ -216,7 +253,7 @@ gulp.task "svg-activity-coffee", ()->
     .pipe gulp_coffee()
     .on "error", logAndKillError
     .pipe gulp_sourcemaps.write() # TODO: Don't write sourcemaps in production
-    .pipe gulp.dest "public/libs/activity/"
+    .pipe gulp.dest "public/activity/"
     .pipe browser_sync.stream
       match: "**/*.js"
     .pipe gulp_notify
@@ -245,18 +282,21 @@ gulp.task "svg-compile", ()->
     
 ###################################################################################################
 
-expandCurlPath = (p)->
-  "curl -fsS https://raw.githubusercontent.com/cdig/svg-activity-starter/dist/#{p} > #{p}"
 
-updateCmds = [
-  expandCurlPath "package.json"
-  expandCurlPath "gulpfile.coffee"
-  expandCurlPath ".gitignore"
+curlFromStarter = (file)->
+  "curl -fsS https://raw.githubusercontent.com/cdig/svg-activity-starter/dist/#{file} > #{file}"
+
+
+
+
+gulp.task "update", gulp_shell.task [
+  curlFromStarter ".gitignore"
+  curlFromStarter "bower.json"
+  curlFromStarter "gulpfile.coffee"
+  curlFromStarter "npm-shrinkwrap.json"
+  curlFromStarter "package.json"
+  "npm update"
 ]
-
-
-
-gulp.task 'update', gulp_shell.task updateCmds
 
 
 

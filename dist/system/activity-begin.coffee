@@ -7,6 +7,7 @@ activity.registerInstance = (instanceName, stance)->
       console.warn "#{instanceName} is already in use. Please use another"
       return
   activity._instances.push {name: instanceName, instance: stance}
+
 do ->
   Take "SVGActivities", (SVGActivities)->
     SVGActivities.registerActivityDefinition(activity)

@@ -3,8 +3,6 @@ do ->
     return scope = 
       getElement: ()->
         return svgElement
-      
       setup: ()->
-
   activity.registerInstance("root", "root")
 
