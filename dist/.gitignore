@@ -51,4 +51,3 @@ secrets.yml
 bower_components
 /dev
 node_modules
-/resources
