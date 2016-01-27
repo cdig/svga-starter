@@ -53,10 +53,11 @@ paths =
     ]  
   coffee:
     source: [
+      "bower_components/**/pack/**/*.coffee"
       "system/activity-start.coffee"
       "source/standalone/**/*.coffee"
     ]
-    watch: "{bower_components,system,source/coffee}/**/*.coffee"
+    watch: "{bower_components,system,source/standalone/}/**/*.coffee"
   dev: "dev/**/*"
   html:
     pack: "bower_components/**/pack/**/*.html"
@@ -89,11 +90,12 @@ paths =
     watch: "{source,bower_components}/**/*.{kit,html}"
   scss:
     source: [
+      "bower_components/cd-reset/dist/reset.scss"
       "bower_components/**/pack/**/vars.scss"
       "bower_components/**/pack/**/*.scss"
       "source/standalone/**/*.scss"
     ]
-  watch: "{bower_components, source}/**/*.scss"
+  watch: "{bower_components, source/standalone}/**/*.scss"
 
 
 
