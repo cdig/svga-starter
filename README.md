@@ -1,5 +1,5 @@
 # SVG Activity Starter
-A project for making activities/animations with SVGs to either be used inside of a module or as a stand alone page. For documentation on specifics of SVGs, look up [SVG Activity Components](https://github.com/cdig/svg-activity-components). To get started, [download a copy of this project](https://github.com/cdig/svg-activity-starter/archive/v2.zip). Take the ```dist``` folder and rename it something else.
+A project for making activities/animations with SVGs to either be used inside of a module or as a stand alone page. For documentation on specifics of SVGs, see the "SVG Activity" documentation in [The Lunchbox Sessions Wiki](https://github.com/cdig/lunchboxsessions/wiki/). To get started, [download a copy of this project](https://github.com/cdig/svg-activity-starter/archive/v2.zip). Take the ```dist``` folder and rename it something else.
 
 ## Steps to getting an SVG up and running.
 - cd into renamed ```dist``` folder
