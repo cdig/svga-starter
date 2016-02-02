@@ -273,6 +273,7 @@ gulp.task "svg-compile", ()->
     .pipe gulp_insert.append("</style>")
   gulp.src paths.svg.source
     .pipe gulp_replace "<defs>", "<defs><!-- bower:css --><!-- endinject -->"
+    .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ''
     .pipe gulp_inject css, name: "bower", transform: fileContents
     .pipe gulp.dest "public"
     .pipe browser_sync.stream
