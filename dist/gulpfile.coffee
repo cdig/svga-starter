@@ -95,7 +95,8 @@ paths =
       "bower_components/**/pack/**/*.scss"
       "source/standalone/**/*.scss"
     ]
-  watch: "{bower_components, source/standalone}/**/*.scss"
+    watch: "{bower_components,source/standalone}/**/*.scss"
+
 
 
 
@@ -230,7 +231,7 @@ gulp.task "kit", ["libs:bower", "libs:source"], ()->
   # pack.pipe(gulp_using()) # Uncomment for debug
   
   gulp.src paths.kit.source
-    # .pipe gulp_using() # Uncomment for debug
+    # .pipe gulp_using() # Uncomment for debug    
     .pipe gulp_kit()
     .on "error", logAndKillError
     .pipe gulp_inject libs, name: "bower", ignorePath: "/public/", addRootSlash: false
