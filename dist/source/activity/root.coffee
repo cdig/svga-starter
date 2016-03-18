@@ -1,8 +1,6 @@
-do ->
+Take [], ()->
   activity.root = (svgElement)->
-    return scope = 
-      getElement: ()->
-        return svgElement
+    return scope =
       setup: ()->
   activity.registerInstance("root", "root")
 

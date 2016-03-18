@@ -1,0 +1,5 @@
+//added so the svg-activity when standalone will use up 100% of the window
+body {
+    height: 100%;
+    width: 100%;
+}
