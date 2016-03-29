@@ -50,7 +50,7 @@ paths =
     source: [
       "source/**/*.{#{assetTypes}}"
       "bower_components/*/pack/**/*.{#{assetTypes}}"
-    ]  
+    ]
   coffee:
     source: [
       "bower_components/**/pack/**/*.coffee"
@@ -64,12 +64,14 @@ paths =
   svg:
     source: [
       "source/**/*.svg"
-    ]    
+    ]
     watch: "source/**/*.svg"
   svg_sass:
     source: [
-      "source/activity/**/*.scss"]
-    watch: "source/activity/**/*.scss"
+      "system/_activity.scss"
+      "source/activity/**/*.scss"
+      ]
+    watch: "{source/activity,system}/**/*.scss"
   svg_activity_coffee:
     source: [
       "system/activity-begin.coffee"
@@ -93,17 +95,16 @@ paths =
       "bower_components/cd-reset/dist/reset.scss"
       "bower_components/**/pack/**/vars.scss"
       "bower_components/**/pack/**/*.scss"
+      "system/_styles.scss"
       "source/standalone/**/*.scss"
     ]
-    watch: "{bower_components,source/standalone}/**/*.scss"
-
-
+    watch: "{bower_components,source/standalone,system}/**/*.scss"
 
 
 gulp.task "dev", gulp_shell.task [
   'if [ -d "dev" ]; then rsync --exclude "*/.git/" --delete -ar dev/* bower_components; fi'
 ]
-  
+
 
 gulp.task "coffee", ()->
   gulp.src paths.coffee.source
@@ -132,7 +133,7 @@ gulp.task "libs", ()->
         return minPath
       else
         return path
-  
+
   gulp.src bowerWithMin.concat(sourceMaps), base: 'bower_components/'
     # .pipe gulp_using() # Uncomment for debug
     .on "error", logAndKillError
@@ -225,13 +226,13 @@ gulp.task "kit", ["libs:bower", "libs:source"], ()->
   libs = gulp.src paths.libs.source, read: false
   html = gulp.src main_bower_files "**/*.{html}"
   pack = gulp.src paths.html.pack
-  
+
   # libs.pipe(gulp_using()) # Uncomment for debug
   # html.pipe(gulp_using()) # Uncomment for debug
   # pack.pipe(gulp_using()) # Uncomment for debug
-  
+
   gulp.src paths.kit.source
-    # .pipe gulp_using() # Uncomment for debug    
+    # .pipe gulp_using() # Uncomment for debug
     .pipe gulp_kit()
     .on "error", logAndKillError
     .pipe gulp_inject libs, name: "bower", ignorePath: "/public/", addRootSlash: false
@@ -282,7 +283,7 @@ gulp.task "svg-compile", ()->
     .pipe gulp_notify
       title: "👍"
       message: "SVG Compiled"
-    
+
 ###################################################################################################
 
 
