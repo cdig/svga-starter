@@ -144,7 +144,7 @@ gulp.task "dev:watch", (cb)->
       process.chdir chunk.path
       child = spawn "gulp", ["default"]
       child.stdout.on "data", (data)->
-        console.log chalk.green(chunk.path.replace chunk.base) + " " + chalk.white data.toString() if data
+        console.log chalk.green(chunk.path.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
   cb()
 
