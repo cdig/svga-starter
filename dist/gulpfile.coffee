@@ -34,7 +34,7 @@ fileContents = (filePath, file)->
 logAndKillError = (err)->
   beepbeep()
   console.log chalk.bgRed("\n## Error ##")
-  console.log chalk.red err.message + "\n"
+  console.log err.toString()
   gulp_notify.onError(
     emitError: true
     icon: false
