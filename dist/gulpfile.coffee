@@ -61,7 +61,7 @@ paths =
     watch: "{bower_components,system,source/standalone/}/**/*.coffee"
   dev:
     gulp: "dev/*/gulpfile.coffee"
-    watch: "dev/**/dist/**/*"
+    watch: "dev/**/{dist,pack}/**/*"
   html:
     pack: "bower_components/**/pack/**/*.html"
   svg:
