@@ -60,7 +60,7 @@ paths =
     ]
     watch: "{bower_components,system,source/standalone/}/**/*.coffee"
   dev:
-    gulp: "dev/*"
+    gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/dist/**/*"
   html:
     pack: "bower_components/**/pack/**/*.html"
@@ -141,10 +141,11 @@ gulp.task "coffee", ()->
 gulp.task "dev:watch", (cb)->
   gulp.src paths.dev.gulp
     .on "data", (chunk)->
-      process.chdir chunk.path
+      folder = chunk.path.replace "/gulpfile.coffee", ""
+      process.chdir folder
       child = spawn "gulp", ["default"]
       child.stdout.on "data", (data)->
-        console.log chalk.green(chunk.path.replace chunk.base, "") + " " + chalk.white data.toString() if data
+        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
   cb()
 
@@ -291,9 +292,6 @@ gulp.task "svg-compile", ()->
       title: "👍"
       message: "SVG Compiled"
 
-
-gulp.task "init:compile", [], ()->
-  
 
 gulp.task "default", ["assets", "coffee", "kit", "scss", "svg-activity-coffee", "svg-compile"], ()->
   gulp.watch paths.coffee.watch, ["coffee"]
