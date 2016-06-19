@@ -1,6 +1,6 @@
 {
   "name": "svg-activity",
-  "version": "0.0.0",
+  "version": "3.0.0",
   "description": "",
   "devDependencies": {
     "beepbeep": "latest",
@@ -16,12 +16,13 @@
     "gulp-insert": "latest",
     "gulp-kit": "latest",
     "gulp-notify": "latest",
-    "gulp-replace": "latest",
     "gulp-rename": "latest",
+    "gulp-replace": "latest",
     "gulp-sass": "latest",
     "gulp-shell": "latest",
-    "gulp-svgmin": "latest",
     "gulp-sourcemaps": "latest",
+    "gulp-svgmin": "latest",
+    "gulp-uglify": "^1.5.3",
     "gulp-using": "latest",
     "main-bower-files": "latest",
     "path-exists": "latest",
