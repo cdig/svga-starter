@@ -1,13 +1,12 @@
 activity = {}
 activity._name = "%activity_name"
-activity._instances = [] #make into _instance
-activity.registerInstance = (instanceName, stance)->
-  for instance in activity._instances
-    if instanceName.name is instanceName
-      console.warn "#{instanceName} is already in use. Please use another"
-      return
-  activity._instances.push {name: instanceName, instance: stance}
+activity._waitingInstances = []
 
-do ->
-  Take "SVGActivities", (SVGActivities)->
-    SVGActivities.registerActivityDefinition(activity)
+activity.registerInstance = (instanceName, stance)->
+  for instance in activity._waitingInstances when instance.name is instanceName
+    console.log "Warning: registerInstance(#{instanceName}, #{stance}) — #{instanceName} is already in use. Use a different name, maybe?"
+    return
+  activity._waitingInstances.push {name: instanceName, instance: stance}
+
+Take "SVGActivities", (SVGActivities)->
+  SVGActivities.registerActivityDefinition(activity)
