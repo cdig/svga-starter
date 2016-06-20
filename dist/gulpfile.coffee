@@ -89,7 +89,7 @@ paths =
     watch: "{bower_components,source/standalone,system}/**/*.scss"
   svgaCoffee:
     source: [
-      "system/activity-begin.coffee"
+      "system/top.coffee"
       "source/activity/**/*.coffee"
     ]
     watch: "{system,source/activity}/**/*.coffee"
