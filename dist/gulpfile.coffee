@@ -88,10 +88,10 @@ paths =
 
 config:
   svgmin:
-    publicPlugins = [
+    publicPlugins: [
       {minifyStyles: true}
     ]
-    sourcePlugins = [
+    sourcePlugins: [
       {cleanupAttrs: true}
       {removeDoctype: true}
       {removeComments: true}
