@@ -11,6 +11,6 @@ Take ["cdHUD", "DOMContentLoaded"], (cdHUD)->
   
   # Add a HUD Element
   menuButton = document.createElement "menu-button"
-  menuButton.innerHTML = "<img src='standalone/lbs-icon.svg'> <span>Back to Menu</span>"
+  menuButton.innerHTML = "<img src='standalone/lbs-logo.svg'> <span>Back to Menu</span>"
   menuButton.style.order = 1
   cdHUD.addElement menuButton, doClick
