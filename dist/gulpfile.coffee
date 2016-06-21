@@ -1,6 +1,7 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
+del = require "del"
 fs = require "fs"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
@@ -23,7 +24,129 @@ run_sequence = require "run-sequence"
 spawn = require("child_process").spawn
 
 
+# CONFIG ##########################################################################################
+
+
 assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
+
+paths =
+  assets: [
+    "source/**/*.{#{assetTypes}}"
+    "bower_components/*/pack/**/*.{#{assetTypes}}"
+  ]
+  coffee:
+    activity:
+      source: [
+        "system/activity/top.coffee"
+        "source/activity/**/*.coffee"
+      ]
+      watch: "{system,source}/activity/**/*.coffee"
+    standalone: [
+      "bower_components/**/pack/**/*.coffee"
+      "{system,source}/standalone/**/*.coffee"
+    ]
+  dev:
+    gulp: "dev/*/gulpfile.coffee"
+    watch: "dev/**/{dist,pack}/**/*"
+  html: "bower_components/**/pack/**/*.html"
+  kit:
+    source: [
+      "source/standalone/index.kit"
+      # TODO: figure out how to add Kit/HTML components from Asset Packs
+    ]
+    watch: [
+      "source/**/*.{kit,html}"
+      "bower_components/**/*" # Watch all file types, because kit runs libs which pulls from bower which pulls from dev (phew)
+    ]
+  libs: [
+    "public/_libs/bower/take-and-make/dist/take-and-make.js"
+    "public/_libs/**/*"
+    "public/activity/**/*.js"
+  ]
+  scss:
+    standalone:
+      source: [
+        "bower_components/**/pack/**/vars.scss"
+        "bower_components/**/pack/**/*.scss"
+        "system/standalone/standalone.scss"
+        "source/standalone/**/vars.scss"
+        "source/standalone/**/*.scss"
+      ]
+      watch: [
+        "bower_components/**/pack/*.scss"
+        "{system,source}/standalone/**/*.scss"
+      ]
+    activity:
+      source: [
+        "system/activity/activity.scss"
+        "source/activity/**/vars.scss"
+        "source/activity/**/*.scss"
+        ]
+      watch: "{system,source}/activity/**/*.scss"
+  svg:
+    activity: "source/**/*.svg"
+
+config:
+  svgmin:
+    publicPlugins = [
+      {minifyStyles: true}
+    ]
+    sourcePlugins = [
+      {cleanupAttrs: true}
+      {removeDoctype: true}
+      {removeComments: true}
+      {removeMetadata: true}
+      {removeTitle: true}
+      {removeUselessDefs: true}
+      {removeEditorsNSData: true}
+      {removeEmptyAttrs: true}
+      {removeHiddenElems: true}
+      {removeEmptyText: true}
+      {removeEmptyContainers: true}
+      # {minifyStyles: true}
+      # {convertStyleToAttrs: true}
+      {convertColors:
+        names2hex: true
+        rgb2hex: true
+      }
+      {convertPathData:
+        applyTransforms: true
+        applyTransformsStroked: true
+        makeArcs: {
+          threshold: 20 # coefficient of rounding error
+          tolerance: 10  # percentage of radius
+        }
+        straightCurves: true
+        lineShorthands: true
+        curveSmoothShorthands: true
+        floatPrecision: 2
+        transformPrecision: 2
+        removeUseless: true
+        collapseRepeated: true
+        utilizeAbsolute: true
+        leadingZero: false
+        negativeExtraSpace: true
+      }
+      {convertTransform:
+        convertToShorts: true
+        degPrecision: 2 # transformPrecision (or matrix precision) - 2 by default
+        floatPrecision: 2
+        transformPrecision: 2
+        matrixToTransform: false # Setting to true causes an error because of the inverse() call in SVG Mask
+        shortTranslate: true
+        shortScale: true
+        shortRotate: true
+        removeUseless: true
+        collapseIntoOne: true
+        leadingZero: false
+        negativeExtraSpace: false
+      }
+      {cleanupNumericValues:
+        floatPrecision: 2
+      }
+      {moveElemsAttrsToGroup: true}
+      {sortAttrs: true}
+    ]
 
 
 gulp_notify.logLevel(0)
@@ -31,8 +154,12 @@ gulp_notify.on "click", ()->
   do gulp_shell.task "open -a Terminal"
 
 
+# HELPER FUNCTIONS ################################################################################
+
+
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
+
 
 logAndKillError = (err)->
   beepbeep()
@@ -48,118 +175,7 @@ logAndKillError = (err)->
   @emit "end"
 
 
-paths =
-  assets: [
-    "source/**/*.{#{assetTypes}}"
-    "bower_components/*/pack/**/*.{#{assetTypes}}"
-  ]
-  coffee: [
-    "bower_components/**/pack/**/*.coffee"
-    "system/standalone-loader.coffee"
-    "source/standalone/**/*.coffee"
-  ]
-  dev:
-    gulp: "dev/*/gulpfile.coffee"
-    watch: "dev/**/{dist,pack}/**/*"
-  html: "bower_components/**/pack/**/*.html"
-  libs: [
-    "public/_libs/bower/take-and-make/dist/take-and-make.js"
-    "public/_libs/**/*"
-    "public/activity/**/*.js"
-  ]
-  kit:
-    source: [
-      "source/standalone/index.kit"
-      # TODO: figure out how to add Kit/HTML components from Asset Packs
-    ]
-    watch: [
-      "source/**/*.{kit,html}"
-      "bower_components/**/*" # Watch all file types, because kit runs libs which pulls from bower which pulls from dev (phew)
-    ]
-  scss:
-    source: [
-      "bower_components/cd-reset/dist/reset.scss"
-      "bower_components/**/pack/**/vars.scss"
-      "bower_components/**/pack/**/*.scss"
-      "source/standalone/**/*.scss"
-      "system/_styles.scss"
-    ]
-    watch: "{bower_components,source/standalone,system}/**/*.scss"
-  svgaCoffee:
-    source: [
-      "system/top.coffee"
-      "source/activity/**/*.coffee"
-    ]
-    watch: "{system,source/activity}/**/*.coffee"
-  svgaScss:
-    source: [
-      "system/_activity.scss"
-      "source/activity/**/*.scss"
-      ]
-    watch: "{source/activity,system}/**/*.scss"
-  svgaSvg: "source/**/*.svg"
-
-
-svgminPublicPlugins = [
-  {minifyStyles: true}
-]
-
-svgminSourcePlugins = [
-  {cleanupAttrs: true}
-  {removeDoctype: true}
-  {removeComments: true}
-  {removeMetadata: true}
-  {removeTitle: true}
-  {removeUselessDefs: true}
-  {removeEditorsNSData: true}
-  {removeEmptyAttrs: true}
-  {removeHiddenElems: true}
-  {removeEmptyText: true}
-  {removeEmptyContainers: true}
-  # {minifyStyles: true}
-  # {convertStyleToAttrs: true}
-  {convertColors:
-    names2hex: true
-    rgb2hex: true
-  }
-  {convertPathData:
-    applyTransforms: true
-    applyTransformsStroked: true
-    makeArcs: {
-      threshold: 20 # coefficient of rounding error
-      tolerance: 10  # percentage of radius
-    }
-    straightCurves: true
-    lineShorthands: true
-    curveSmoothShorthands: true
-    floatPrecision: 2
-    transformPrecision: 2
-    removeUseless: true
-    collapseRepeated: true
-    utilizeAbsolute: true
-    leadingZero: false
-    negativeExtraSpace: true
-  }
-  {convertTransform:
-    convertToShorts: true
-    degPrecision: 2 # transformPrecision (or matrix precision) - 2 by default
-    floatPrecision: 2
-    transformPrecision: 2
-    matrixToTransform: false # Setting to true causes an error because of the inverse() call in SVG Mask
-    shortTranslate: true
-    shortScale: true
-    shortRotate: true
-    removeUseless: true
-    collapseIntoOne: true
-    leadingZero: false
-    negativeExtraSpace: false
-  }
-  {cleanupNumericValues:
-    floatPrecision: 2
-  }
-  {moveElemsAttrsToGroup: true}
-  {sortAttrs: true}
-]
+# TASKS: ACTIVITY COMPILATION #######################################################################
 
 
 gulp.task "assets", ()->
@@ -176,8 +192,8 @@ gulp.task "assets", ()->
       message: "Assets"
 
 
-gulp.task "coffee", ()->
-  gulp.src paths.coffee
+gulp.task "standalone-coffee", ()->
+  gulp.src paths.coffee.standalone
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
     .pipe gulp_concat "scripts.coffee"
@@ -193,6 +209,15 @@ gulp.task "coffee", ()->
       message: "Coffee"
 
 
+gulp.task "del:public", ()->
+  del "public"
+
+
+gulp.task "dev:sync", gulp_shell.task [
+  "if [ -d 'dev' ]; then rsync --exclude '*/.git/' --delete -ar dev/* bower_components; fi"
+]
+
+
 gulp.task "dev:watch", (cb)->
   gulp.src paths.dev.gulp
     .on "data", (chunk)->
@@ -203,11 +228,6 @@ gulp.task "dev:watch", (cb)->
         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
   cb()
-
-
-gulp.task "dev:sync", gulp_shell.task [
-  "if [ -d 'dev' ]; then rsync --exclude '*/.git/' --delete -ar dev/* bower_components; fi"
-]
 
 
 gulp.task "kit", ["libs:bower", "libs:source"], ()->
@@ -260,8 +280,8 @@ gulp.task "libs:source", ()->
     .pipe gulp.dest "public/_libs/source"
 
 
-gulp.task "scss", ()->
-  gulp.src paths.scss.source.concat main_bower_files "**/*.scss"
+gulp.task "standalone-scss", ()->
+  gulp.src paths.scss.standalone.source.concat main_bower_files "**/*.scss"
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
     .pipe gulp_concat "styles.scss"
@@ -291,9 +311,9 @@ gulp.task "serve", ()->
     ui: false
 
 
-gulp.task "svga-coffee", ()->
+gulp.task "activity-coffee", ()->
   json = JSON.parse(fs.readFileSync("source/activity/svg-activity.json"))
-  gulp.src paths.svgaCoffee.source
+  gulp.src paths.coffee.activity.source
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
     .pipe gulp_concat "#{json.name}.coffee"
@@ -310,8 +330,8 @@ gulp.task "svga-coffee", ()->
       message: "SVGA Coffee"
 
 
-gulp.task "svga-svg", ()->
-  css = gulp.src paths.svgaScss.source
+gulp.task "activity-svg", ()->
+  css = gulp.src paths.scss.activity.source
     .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
       errLogToConsole: true
@@ -324,20 +344,20 @@ gulp.task "svga-svg", ()->
       remove: false
     .pipe gulp_replace /^/, "<style>"
     .pipe gulp_replace /$/, "</style>"
-  gulp.src paths.svgaSvg
+  gulp.src paths.svg.activity
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
     .pipe gulp_svgmin
       full: true # Only runs plugins we specify
       js2svg:
         pretty: true
         indent: "  "
-      plugins: svgminSourcePlugins
+      plugins: config.svgmin.sourcePlugins
     .pipe gulp.dest "source"
     .pipe gulp_svgmin
       full: true # Only runs plugins we specify
       js2svg:
         pretty: false
-      plugins: svgminPublicPlugins
+      plugins: config.svgmin.publicPlugins
     .pipe gulp_replace "<defs>", "<defs><!-- bower:css --><!-- endinject -->"
     .pipe gulp_inject css, name: "bower", transform: fileContents
     .pipe gulp.dest "public"
@@ -348,14 +368,31 @@ gulp.task "svga-svg", ()->
       message: "SVGA SVG"
 
 
-gulp.task "default", ["assets", "coffee", "kit", "scss", "svga-coffee", "svga-svg"], ()->
-  gulp.watch paths.coffee, ["coffee"]
+gulp.task "compile", [
+  "activity-coffee",
+  "activity-svg",
+  "assets",
+  "kit",
+  "standalone-coffee",
+  "standalone-scss"
+]
+
+
+gulp.task "watch", ()->
+  gulp.watch paths.coffee.activity.watch, ["activity-coffee"]
+  gulp.watch paths.scss.activity.watch, ["activity-svg"]
+  gulp.watch paths.svg.activity, ["activity-svg"]
+  gulp.watch paths.assets, ["assets"]
   gulp.watch paths.dev.watch, ["dev:sync"]
   gulp.watch paths.kit.watch, ["kit"]
-  gulp.watch paths.scss.watch, ["scss"]
-  gulp.watch paths.svgaCoffee.watch, ["svga-coffee"]
-  gulp.watch paths.svgaScss.watch, ["svga-svg"]
-  gulp.watch paths.svgaSvg, ["svga-svg"]
+  gulp.watch paths.coffee.standalone, ["standalone-coffee"]
+  gulp.watch paths.scss.standalone.watch, ["standalone-scss"]
   gulp.watch("public/**/*.svg").on "change", browser_sync.reload
-  run_sequence "dev:watch"
-  run_sequence "serve" # Must come last
+
+
+gulp.task "recompile", ()-> # This is also used from the command line, for bulk updates
+  run_sequence "del:public", "compile"
+
+
+gulp.task "default", ()->
+  run_sequence "recompile", "dev:watch", "watch", "serve"
