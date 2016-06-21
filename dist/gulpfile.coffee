@@ -196,7 +196,7 @@ gulp.task "standalone-coffee", ()->
   gulp.src paths.coffee.standalone
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
-    .pipe gulp_concat "scripts.coffee"
+    .pipe gulp_concat "standalone.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
     .pipe gulp_uglify()
@@ -287,7 +287,7 @@ gulp.task "standalone-scss", ()->
   gulp.src paths.scss.standalone.source.concat main_bower_files "**/*.scss"
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
-    .pipe gulp_concat "styles.scss"
+    .pipe gulp_concat "standalone.scss"
     .pipe gulp_sass
       errLogToConsole: true
       outputStyle: "compressed"
