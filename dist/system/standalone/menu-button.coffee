@@ -1,14 +1,9 @@
 # Note: This was forked from a file in cd-module. Please keep these files in sync.
 
-Take ["cdHUD", "KVStore", "DOMContentLoaded"], (cdHUD, KVStore)->
+Take ["cdHUD", "DOMContentLoaded"], (cdHUD)->
   
   doClick = ()->
-    success = KVStore.save()
-    if success
-      window.history.back() # TODO: Should probably use Config.parent (or something) here
-    else
-      ModalPopup.open "Saving Failed", "Check your internet connection and try again."
-  
+    window.history.back() # TODO: Should probably use Config.parent (or something) here
   
   # Set up buttons in content (eg: in ending.kit)
   for button in document.querySelectorAll "[menu-button]"

@@ -32,6 +32,7 @@ assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
 paths =
   assets: [
     "{system,source}/**/*.{#{assetTypes}}"
+    "system/**/*.svg"
     "bower_components/*/pack/**/*.{#{assetTypes}}"
   ]
   coffee:
