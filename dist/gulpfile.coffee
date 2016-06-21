@@ -86,7 +86,7 @@ paths =
   svg:
     activity: "source/**/*.svg"
 
-config:
+config =
   svgmin:
     publicPlugins: [
       {minifyStyles: true}
