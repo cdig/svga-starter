@@ -31,7 +31,7 @@ assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
 
 paths =
   assets: [
-    "source/**/*.{#{assetTypes}}"
+    "{system,source}/**/*.{#{assetTypes}}"
     "bower_components/*/pack/**/*.{#{assetTypes}}"
   ]
   coffee:
@@ -64,18 +64,6 @@ paths =
     "public/activity/**/*.js"
   ]
   scss:
-    standalone:
-      source: [
-        "bower_components/**/pack/**/vars.scss"
-        "bower_components/**/pack/**/*.scss"
-        "system/standalone/standalone.scss"
-        "source/standalone/**/vars.scss"
-        "source/standalone/**/*.scss"
-      ]
-      watch: [
-        "bower_components/**/pack/*.scss"
-        "{system,source}/standalone/**/*.scss"
-      ]
     activity:
       source: [
         "system/activity/activity.scss"
@@ -83,6 +71,11 @@ paths =
         "source/activity/**/*.scss"
         ]
       watch: "{system,source}/activity/**/*.scss"
+    standalone: [
+        "bower_components/**/pack/**/vars.scss"
+        "bower_components/**/pack/**/*.scss"
+        "{system,source}/standalone/**/*.scss"
+      ]
   svg:
     activity: "source/**/*.svg"
 
@@ -284,7 +277,7 @@ gulp.task "libs:source", ()->
 
 
 gulp.task "standalone-scss", ()->
-  gulp.src paths.scss.standalone.source.concat main_bower_files "**/*.scss"
+  gulp.src paths.scss.standalone.concat main_bower_files "**/*.scss"
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
     .pipe gulp_concat "standalone.scss"
@@ -382,14 +375,14 @@ gulp.task "compile", [
 
 
 gulp.task "watch", ()->
-  gulp.watch paths.coffee.activity.watch, ["activity-coffee"]
-  gulp.watch paths.scss.activity.watch, ["activity-svg"]
-  gulp.watch paths.svg.activity, ["activity-svg"]
   gulp.watch paths.assets, ["assets"]
+  gulp.watch paths.coffee.activity.watch, ["activity-coffee"]
+  gulp.watch paths.coffee.standalone, ["standalone-coffee"]
   gulp.watch paths.dev.watch, ["dev:sync"]
   gulp.watch paths.kit.watch, ["kit"]
-  gulp.watch paths.coffee.standalone, ["standalone-coffee"]
-  gulp.watch paths.scss.standalone.watch, ["standalone-scss"]
+  gulp.watch paths.scss.activity.watch, ["activity-svg"]
+  gulp.watch paths.scss.standalone, ["standalone-scss"]
+  gulp.watch paths.svg.activity, ["activity-svg"]
   gulp.watch("public/**/*.svg").on "change", browser_sync.reload
 
 
