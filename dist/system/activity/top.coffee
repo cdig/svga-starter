@@ -1,4 +1,5 @@
-# This is injected above all other activity-related code.
+# This is injected above all other activity-related code that runs inside the <svg-activity>.
+
 # The activity object is used in all symbol definitions.
 # We may someday want to make it a proxy, perhaps?
 activity = {}
@@ -14,6 +15,7 @@ activity._activityName = "%activity_name"
 # _waitingInstances, and substitute in a better registerInstance function.
 activity._waitingInstances = []
 activity.registerInstance = (graphicName, symbolName)->
+  console.log "Starter registerInstance"
   for waitingInstance in activity._waitingInstances when waitingInstance.graphicName is graphicName
     console.log "registerInstance(#{graphicName}, #{symbolName}) Warning: #{graphicName} was already registered. Use a different name, maybe?"
     return

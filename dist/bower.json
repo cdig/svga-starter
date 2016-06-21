@@ -1,6 +1,6 @@
 {
-  "name": "svg-standalone",
-  "description": "SVG standalone project",
+  "name": "svg-activity",
+  "description": "An SVG Activity",
   "dependencies": {
     "take-and-make": "cdig/take-and-make#v2",
     "cd-library": "cdig/cd-library#v2",

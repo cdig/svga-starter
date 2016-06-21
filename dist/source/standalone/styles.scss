@@ -1,5 +1,11 @@
-//added so the svg-activity when standalone will use up 100% of the window
+// These styles are applied to the HTML outside/around the standalone SVG.
+
 body {
-    height: 100%;
-    width: 100%;
+  // Fill the browser window
+  width: 100%;
+  height: 100%;
+  
+  // This is a sensible default for Live Schematics.
+  // For other animations, you might want to change it.
+  background: #BBB;
 }

@@ -1,14 +1,12 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
-del = require "del"
 fs = require "fs"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
 gulp_inject = require "gulp-inject"
-gulp_insert = require "gulp-insert"
 gulp_kit = require "gulp-kit"
 gulp_notify = require "gulp-notify"
 gulp_rename = require "gulp-rename"
@@ -18,7 +16,7 @@ gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_uglify = require "gulp-uglify"
-gulp_using = require "gulp-using"
+# gulp_using = require "gulp-using" # Uncomment and npm install for debug
 main_bower_files = require "main-bower-files"
 path_exists = require("path-exists").sync
 run_sequence = require "run-sequence"
@@ -57,7 +55,7 @@ paths =
   ]
   coffee: [
     "bower_components/**/pack/**/*.coffee"
-    "system/activity-start.coffee"
+    "system/standalone-loader.coffee"
     "source/standalone/**/*.coffee"
   ]
   dev:
@@ -71,7 +69,7 @@ paths =
   ]
   kit:
     source: [
-      "source/index.kit"
+      "source/standalone/index.kit"
       # TODO: figure out how to add Kit/HTML components from Asset Packs
     ]
     watch: [
@@ -230,7 +228,7 @@ gulp.task "kit", ["libs:bower", "libs:source"], ()->
     .pipe gulp_inject html, name: "bower", transform: fileContents
     .pipe gulp_inject pack, name: "pack", transform: fileContents
     .pipe gulp_replace "<script src=\"", "<script defer src=\""
-    .pipe gulp.dest "public"
+    .pipe gulp.dest "public/index.html"
     .pipe browser_sync.stream
       match: "**/*.{css,html,js}"
     .pipe gulp_notify
@@ -294,7 +292,7 @@ gulp.task "serve", ()->
 
 
 gulp.task "svga-coffee", ()->
-  json = JSON.parse(fs.readFileSync("./source/svg-activity.json"))
+  json = JSON.parse(fs.readFileSync("source/activity/svg-activity.json"))
   gulp.src paths.svgaCoffee.source
     # .pipe gulp_using() # Uncomment for debug
     # .pipe gulp_sourcemaps.init()
@@ -324,8 +322,8 @@ gulp.task "svga-svg", ()->
       browsers: "last 5 Chrome versions, last 2 ff versions, IE >= 10, Safari >= 8, iOS >= 8"
       cascade: false
       remove: false
-    .pipe gulp_insert.prepend("<style>")
-    .pipe gulp_insert.append("</style>")
+    .pipe gulp_replace /^/, "<style>"
+    .pipe gulp_replace /$/, "</style>"
   gulp.src paths.svgaSvg
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
     .pipe gulp_svgmin
