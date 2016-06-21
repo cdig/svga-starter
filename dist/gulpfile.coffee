@@ -248,7 +248,10 @@ gulp.task "kit", ["libs:bower", "libs:source"], ()->
     .pipe gulp_inject html, name: "bower", transform: fileContents
     .pipe gulp_inject pack, name: "pack", transform: fileContents
     .pipe gulp_replace "<script src=\"", "<script defer src=\""
-    .pipe gulp.dest "public/index.html"
+    .pipe gulp_rename (path)->
+      path.dirname = path.dirname.replace "/standalone", ""
+      path
+    .pipe gulp.dest "public"
     .pipe browser_sync.stream
       match: "**/*.{css,html,js}"
     .pipe gulp_notify
