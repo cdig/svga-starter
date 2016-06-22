@@ -28,24 +28,22 @@ assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
 
 
 paths =
-  coffee:
-    source: [
-      "system/activity/top.coffee"
-      "source/activity/**/*.coffee"
-    ]
-    watch: "{system,source}/activity/**/*.coffee"
+  activity: watch: [
+    "source/**/*"
+    "bower_components/**/pack/**/*"
+    "bower_components/**/*.{css,js}"
+  ]
+  coffee: source: "source/**/*.coffee"
   dev:
     gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/{dist,pack}/**/*"
-  js: "bower_components/take-and-make/dist/take-and-make.js"
-  scss:
-    source: [
-      "system/activity/activity.scss"
-      "source/activity/**/vars.scss"
-      "source/activity/**/*.scss"
-    ]
-    watch: "{system,source}/activity/**/*.scss"
-  svg: "source/**/*.svg"
+  js: source: "bower_components/take-and-make/dist/take-and-make.js"
+  scss: source: [
+    "system/activity/activity.scss"
+    "source/activity/**/vars.scss"
+    "source/activity/**/*.scss"
+  ]
+  svg: source: "source/**/*.svg"
 
 
 config =
@@ -140,7 +138,7 @@ logAndKillError = (err)->
 wrapJS = (src)->
   src
     .on "error", logAndKillError
-    .pipe gulp_uglify()
+    # .pipe gulp_uglify()
     .pipe gulp_replace /^/, "<script type='text/ecmascript'><![CDATA["
     .pipe gulp_replace /$/, "]]></script>"
 
@@ -175,7 +173,7 @@ gulp.task "activity", ()->
     .pipe gulp_concat "activity.coffee"
     .pipe gulp_coffee()
   
-  gulp.src paths.svg
+  gulp.src paths.svg.source
     .on "error", logAndKillError
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
     .pipe gulp_replace /\swidth="(.*?)"/, " "
@@ -192,12 +190,10 @@ gulp.task "activity", ()->
     .pipe gulp_svgmin
       full: true # Only runs plugins we specify
       js2svg:
-        pretty: false
+        pretty: true
       plugins: config.svgmin.publicPlugins
-    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject --><defs>"
-    .pipe gulp_replace "<defs>", "<!-- activity:css --><!-- endinject --><defs>"
-    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject --></svg>"
-    .pipe gulp_replace "</svg>", "<!-- activity:js --><!-- endinject --></svg>"
+    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject --><!-- activity:css --><!-- endinject --><defs>"
+    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject --><!-- activity:js --><!-- endinject --></svg>"
     .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
@@ -244,11 +240,8 @@ gulp.task "serve", ()->
 
 
 gulp.task "watch", ()->
+  gulp.watch paths.activity.watch, ["activity"]
   gulp.watch paths.dev.watch, ["dev:sync"]
-  gulp.watch paths.coffee.watch, ["activity"]
-  gulp.watch paths.js, ["activity"]
-  gulp.watch paths.scss.watch, ["activity"]
-  gulp.watch paths.svg, ["activity"]
   gulp.watch("public/*.svg").on "change", browser_sync.reload
 
 
