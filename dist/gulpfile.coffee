@@ -37,10 +37,7 @@ paths =
   dev:
     gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/{dist,pack}/**/*"
-  js: [
-    "bower_components/take-and-make/dist/take-and-make.js"
-    "public/_libs/**/*"
-  ]
+  js: "bower_components/take-and-make/dist/take-and-make.js"
   scss:
     source: [
       "system/activity/activity.scss"
@@ -209,8 +206,8 @@ gulp.task "activity", ()->
       indexPath ?= path.basename + path.extname
       path
     .pipe gulp.dest "public"
-    .pipe browser_sync.stream # Doesn't seem to work
-      match: "**/*.svg"
+    # .pipe browser_sync.stream # Doesn't seem to work
+    #   match: "**/*.svg"
     .pipe gulp_notify
       title: "👍"
       message: "SVG Activity"
@@ -252,7 +249,7 @@ gulp.task "watch", ()->
   gulp.watch paths.js, ["activity"]
   gulp.watch paths.scss.watch, ["activity"]
   gulp.watch paths.svg, ["activity"]
-  # gulp.watch("public/*.svg").on "change", browser_sync.reload
+  gulp.watch("public/*.svg").on "change", browser_sync.reload
 
 
 # This task is also used from the command line, for bulk updates
