@@ -182,10 +182,13 @@ gulp.task "activity", ()->
   gulp.src paths.svg.activity
     .on "error", logAndKillError
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
+    .pipe gulp_replace /viewBox="(.*?)"/, ""
     .pipe gulp_replace /\swidth="(.*?)"/, " "
     .pipe gulp_replace /\sheight="(.*?)"/, " "
     .pipe gulp_replace /\sx="(.*?)"/, " "
     .pipe gulp_replace /\sy="(.*?)"/, " "
+    .pipe gulp_replace "Lato_Regular_Regular", "Lato"
+    .pipe gulp_replace "Lato_Bold_Bold", "Lato"
     .pipe gulp_svgmin
       full: true # Only runs plugins we specify
       js2svg:
