@@ -33,17 +33,23 @@ paths =
     "bower_components/**/pack/**/*"
     "bower_components/**/*.{css,js}"
   ]
-  coffee: source: "source/**/*.coffee"
+  coffee: source: [
+    "bower_components/**/pack/**/*.coffee"
+    "source/**/*.coffee"
+  ]
   dev:
     gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/{dist,pack}/**/*"
   js: source: "bower_components/take-and-make/dist/take-and-make.js"
   scss: source: [
+    "bower_components/**/pack/**/*.scss"
     "system/activity/activity.scss"
     "source/activity/**/vars.scss"
     "source/activity/**/*.scss"
   ]
-  svg: source: "source/**/*.svg"
+  svg:
+    source: "bower_components/**/pack/**/*.svg"
+    activity: "source/**/*.svg"
 
 
 config =
@@ -173,7 +179,7 @@ gulp.task "activity", ()->
     .pipe gulp_concat "activity.coffee"
     .pipe gulp_coffee()
   
-  gulp.src paths.svg.source
+  gulp.src paths.svg.activity
     .on "error", logAndKillError
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
     .pipe gulp_replace /\swidth="(.*?)"/, " "
