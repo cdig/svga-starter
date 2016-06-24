@@ -14,9 +14,11 @@ gulp_sass = require "gulp-sass"
 gulp_shell = require "gulp-shell"
 # gulp_sourcemaps = require "gulp-sourcemaps" # Uncomment and npm install for debug
 gulp_svgmin = require "gulp-svgmin"
+gulp_svgstore = require "gulp-svgstore"
 gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 main_bower_files = require "main-bower-files"
+path = require "path"
 run_sequence = require "run-sequence"
 spawn = require("child_process").spawn
 
@@ -48,12 +50,19 @@ paths =
     "source/activity/**/*.scss"
   ]
   svg:
-    source: "bower_components/**/pack/**/*.svg"
+    pack: "bower_components/**/pack/**/*.svg"
     activity: "source/**/*.svg"
 
 
 config =
   svgmin:
+    packPlugins: (file)-> [
+      prefixIDsWithFileName:
+        type: "full"
+        fn: (data)->
+          prefix = path.basename file.relative, path.extname file.relative
+          prefixIDs data, prefix + "_"
+    ]
     publicPlugins: [
       {minifyStyles: true}
     ]
@@ -113,11 +122,26 @@ config =
       {moveElemsAttrsToGroup: true}
       {sortAttrs: true}
     ]
+    referencesProps: [
+      "clip-path"
+      "color-profile"
+      "fill"
+      "filter"
+      "marker-start"
+      "marker-mid"
+      "marker-end"
+      "mask"
+      "stroke"
+      "style"
+    ]
 
 
 gulp_notify.logLevel(0)
 gulp_notify.on "click", ()->
   do gulp_shell.task "open -a Terminal"
+
+
+indexPath = null
 
 
 # HELPER FUNCTIONS ################################################################################
@@ -160,7 +184,23 @@ wrapCSS = (src)->
     .pipe gulp_replace /$/, "</style>"
 
 
-indexPath = null
+prefixIDs = (items, prefix)->
+  for item, i in items.content
+    if item.isElem()
+      item.eachAttr (attr)->
+        # id="EXAMPLE"
+        if attr.name is "id"
+          attr.value = prefix + attr.value
+        # url(#EXAMPLE)
+        else if config.svgmin.referencesProps.indexOf(attr.name) > -1
+          if attr.value.match /\burl\(("|')?#(.+?)\1\)/
+            attr.value = attr.value.replace "#", "#" + prefix
+        # href="#EXAMPLE"
+        else if attr.local is "href"
+          if attr.value.match /^#(.+?)$/
+            attr.value = attr.value.replace "#", "#" + prefix
+    prefixIDs item, prefix if item.content
+  return items
 
 
 # TASKS: ACTIVITY COMPILATION #######################################################################
@@ -178,7 +218,17 @@ gulp.task "activity", ()->
   js = gulp.src paths.coffee.source
     .pipe gulp_concat "activity.coffee"
     .pipe gulp_coffee()
-  
+  svgPack = gulp.src paths.svg.pack
+    .on "error", logAndKillError
+    .pipe gulp_svgmin (file)->
+      full: true
+      plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins(file)
+    .pipe gulp_svgstore inlineSvg: true
+    .pipe gulp_replace "<defs>", ""
+    .pipe gulp_replace "</defs>", ""
+    .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
+    .pipe gulp_replace "</svg>", ""
+
   gulp.src paths.svg.activity
     .on "error", logAndKillError
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
@@ -190,23 +240,29 @@ gulp.task "activity", ()->
     .pipe gulp_replace "Lato_Regular_Regular", "Lato"
     .pipe gulp_replace "Lato_Bold_Bold", "Lato"
     .pipe gulp_svgmin
-      full: true # Only runs plugins we specify
+      full: true
       js2svg:
         pretty: true
         indent: "  "
       plugins: config.svgmin.sourcePlugins
     .pipe gulp.dest "source" # overwrite the original file with optimized, pretty-printed version
+    
+    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject --><!-- activity:css --><!-- endinject --><defs>"
+    .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
+    .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
+    
+    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject --><!-- activity:js --><!-- endinject --></svg>"
+    .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
+    .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
+    
+    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs>"
+    .pipe gulp_inject svgPack, name: "pack", transform: fileContents
+    
     .pipe gulp_svgmin
-      full: true # Only runs plugins we specify
+      full: true
       js2svg:
         pretty: true
       plugins: config.svgmin.publicPlugins
-    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject --><!-- activity:css --><!-- endinject --><defs>"
-    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject --><!-- activity:js --><!-- endinject --></svg>"
-    .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
-    .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
-    .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
-    .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
     .pipe gulp_rename (path)->
       indexPath ?= path.basename + path.extname
       path
