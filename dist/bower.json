@@ -3,11 +3,7 @@
   "description": "An SVG Activity",
   "dependencies": {
     "take-and-make": "cdig/take-and-make#v2",
-    "cd-library": "cdig/cd-library#v2",
-    "svg-activity-components": "cdig/svg-activity-components#v3",
-    "cd-map": "cdig/cd-map#v2",
-    "cd-reset": "cdig/cd-reset#v3",
-    "editor": "cdig/editor#v2"
+    "svg-activity-components": "cdig/svg-activity-components#v3"
   },
   "main": [],
   "ignore": [],
