@@ -303,18 +303,20 @@ gulp.task "dev:watch", (cb)->
 gulp.task "serve", ()->
   browser_sync.init
     ghostMode: false
+    notify: false
+    reloadDebounce: 500
     server:
       baseDir: "public"
       index: "wrapper.html"
     ui: false
     watchOptions:
       ignoreInitial: true
-    reloadDebounce: 500
 
 
 gulp.task "watch", ()->
   gulp.watch paths.activity.watch, ["activity"]
   gulp.watch paths.dev.watch, ["dev:sync"]
+  gulp.watch paths.wrapper.html, ["wrapper"]
   gulp.watch "public/**/*", browser_sync.reload
 
 
