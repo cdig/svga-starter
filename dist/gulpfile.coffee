@@ -45,14 +45,14 @@ paths =
   js: source: "bower_components/take-and-make/dist/take-and-make.js"
   scss: source: [
     "bower_components/**/pack/**/*.scss"
-    "system/activity/activity.scss"
-    "source/activity/**/vars.scss"
-    "source/activity/**/*.scss"
+    "source/**/vars.scss"
+    "source/**/*.scss"
   ]
   svg:
     pack: "bower_components/**/pack/**/*.svg"
     activity: "source/**/*.svg"
-
+  wrapper: html: "bower_components/svg-activity-components/dist/wrapper.html"
+  
 
 config =
   svgmin:
@@ -141,9 +141,6 @@ gulp_notify.on "click", ()->
   do gulp_shell.task "open -a Terminal"
 
 
-indexPath = null
-
-
 # HELPER FUNCTIONS ################################################################################
 
 
@@ -207,6 +204,7 @@ prefixIDs = (items, prefix)->
 
 
 gulp.task "activity", ()->
+  svgPath = null
   cssLibs = gulp.src main_bower_files("**/*.css"), base: "bower_components/"
   jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
   css = gulp.src paths.scss.source
@@ -224,9 +222,8 @@ gulp.task "activity", ()->
       full: true
       plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins(file)
     .pipe gulp_svgstore inlineSvg: true
-    .pipe gulp_replace "<defs>", ""
-    .pipe gulp_replace "</defs>", ""
     .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
+    .pipe gulp_replace "<defs>", ""
     .pipe gulp_replace "</svg>", ""
 
   gulp.src paths.svg.activity
@@ -247,15 +244,15 @@ gulp.task "activity", ()->
       plugins: config.svgmin.sourcePlugins
     .pipe gulp.dest "source" # overwrite the original file with optimized, pretty-printed version
     
-    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject --><!-- activity:css --><!-- endinject --><defs>"
+    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject -->\n<!-- activity:css --><!-- endinject -->\n<defs>"
     .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
     
-    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject --><!-- activity:js --><!-- endinject --></svg>"
+    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n</svg>"
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
     
-    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs>"
+    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject -->"
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
     
     .pipe gulp_svgmin
@@ -263,15 +260,23 @@ gulp.task "activity", ()->
       js2svg:
         pretty: true
       plugins: config.svgmin.publicPlugins
-    .pipe gulp_rename (path)->
-      indexPath ?= path.basename + path.extname
-      path
     .pipe gulp.dest "public"
     # .pipe browser_sync.stream # Doesn't seem to work
     #   match: "**/*.svg"
     .pipe gulp_notify
       title: "👍"
       message: "SVG Activity"
+
+
+gulp.task "wrapper", ["activity"], ()->
+  svgPath = gulp.src "public/*.svg", read: false
+  gulp.src paths.wrapper.html
+    .pipe gulp_inject svgPath,
+      name: "wrapper"
+      transform: (filePath)->
+        filePath.replace "/public/", ""
+      removeTags: true
+    .pipe gulp.dest "public"
 
 
 gulp.task "del:public", ()->
@@ -300,19 +305,22 @@ gulp.task "serve", ()->
     ghostMode: false
     server:
       baseDir: "public"
-      index: indexPath # it is okay if this is null
+      index: "wrapper.html"
     ui: false
+    watchOptions:
+      ignoreInitial: true
+    reloadDebounce: 500
 
 
 gulp.task "watch", ()->
   gulp.watch paths.activity.watch, ["activity"]
   gulp.watch paths.dev.watch, ["dev:sync"]
-  gulp.watch("public/*.svg").on "change", browser_sync.reload
+  gulp.watch "public/**/*", browser_sync.reload
 
 
 # This task is also used from the command line, for bulk updates
 gulp.task "recompile", (cb)->
-  run_sequence "del:public", "activity", cb
+  run_sequence "del:public", "wrapper", cb
 
 
 gulp.task "default", ()->
