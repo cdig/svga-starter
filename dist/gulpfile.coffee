@@ -44,8 +44,9 @@ paths =
     watch: "dev/**/{dist,pack}/**/*"
   js: source: "bower_components/take-and-make/dist/take-and-make.js"
   scss: source: [
-    "bower_components/**/pack/**/*.scss"
+    "bower_components/**/pack/**/vars.scss"
     "source/**/vars.scss"
+    "bower_components/**/pack/**/*.scss"
     "source/**/*.scss"
   ]
   svg:
