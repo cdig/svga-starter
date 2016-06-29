@@ -1,5 +1,7 @@
-# SVG Activity Starter
-A project for making activities/animations with SVGs to either be used inside of a module or as a stand alone page. For documentation on specifics of SVGs, see the "SVG Activity" documentation in [The Lunchbox Sessions Wiki](https://github.com/cdig/lunchboxsessions/wiki/). For getting started, follow the steps in The [Lunchbox Sessions Wiki for making a new activity] (https://github.com/cdig/lunchboxsessions/wiki/Make-A-New-SVG-Activity)
+# SVGA Starter
+Download this project when starting a new SVGA.
+
+Check [The Wiki](https://github.com/cdig/lunchboxsessions/wiki/Make-A-New-SVG-Activity) for more info.
 
 ## License
 Copyright (c) 2015-2016 CD Industrial Group Inc. http://www.cdiginc.com
