@@ -2,7 +2,7 @@
   "name": "svg-activity",
   "description": "An SVG Activity",
   "dependencies": {
-    "take-and-make": "cdig/take-and-make#v2",
+    "take-and-make": "cdig/take-and-make#v3",
     "svg-activity-components": "cdig/svg-activity-components#v3"
   },
   "main": [],

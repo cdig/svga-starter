@@ -120,7 +120,8 @@ config =
       {cleanupNumericValues:
         floatPrecision: 2
       }
-      {moveElemsAttrsToGroup: true}
+      # {moveElemsAttrsToGroup: true}
+      {removeEmptyContainers: true}
       {sortAttrs: true}
     ]
     referencesProps: [
@@ -225,8 +226,9 @@ gulp.task "activity", ()->
     .pipe gulp_svgstore inlineSvg: true
     .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
     .pipe gulp_replace "<defs>", ""
+    .pipe gulp_replace "</defs>", ""
     .pipe gulp_replace "</svg>", ""
-
+  
   gulp.src paths.svg.activity
     .on "error", logAndKillError
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
@@ -253,7 +255,7 @@ gulp.task "activity", ()->
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
     
-    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject -->"
+    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs>"
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
     
     .pipe gulp_svgmin
