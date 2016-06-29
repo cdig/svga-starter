@@ -1,9 +1,9 @@
 {
-  "name": "svg-activity",
-  "description": "An SVG Activity",
+  "name": "svga-project",
+  "description": "An SVGA Project",
   "dependencies": {
-    "take-and-make": "cdig/take-and-make#v3",
-    "svg-activity-components": "cdig/svg-activity-components#v3"
+    "svga": "cdig/svga#v3",
+    "take-and-make": "cdig/take-and-make#v3"
   },
   "main": [],
   "ignore": [],

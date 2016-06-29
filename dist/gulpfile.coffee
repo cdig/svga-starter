@@ -52,7 +52,7 @@ paths =
   svg:
     pack: "bower_components/**/pack/**/*.svg"
     activity: "source/**/*.svg"
-  wrapper: html: "bower_components/svg-activity-components/dist/wrapper.html"
+  wrapper: html: "bower_components/svga/dist/wrapper.html"
   
 
 config =

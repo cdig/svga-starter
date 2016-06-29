@@ -1,7 +1,7 @@
 {
-  "name": "svg-activity",
+  "name": "svga-project",
   "version": "3.0.0",
-  "description": "An SVG Activity",
+  "description": "An SVGA Project",
   "devDependencies": {
     "beepbeep": "latest",
     "browser-sync": "latest",
