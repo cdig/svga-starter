@@ -237,8 +237,8 @@ gulp.task "activity", ()->
     .pipe gulp_replace /\sheight="(.*?)"/, " "
     .pipe gulp_replace /\sx="(.*?)"/, " "
     .pipe gulp_replace /\sy="(.*?)"/, " "
-    .pipe gulp_replace "Lato_Regular_Regular", "Lato"
-    .pipe gulp_replace "Lato_Bold_Bold", "Lato"
+    .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
+    .pipe gulp_replace "Lato_Bold_Bold", "Lato, sans-serif"
     .pipe gulp_svgmin
       full: true
       js2svg:
