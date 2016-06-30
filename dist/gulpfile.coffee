@@ -183,6 +183,22 @@ wrapCSS = (src)->
     .pipe gulp_replace /$/, "</style>"
 
 
+fixFlashWeirdness = (src)->
+  src
+    .on "error", logAndKillError
+    .pipe gulp_replace "Lato_Regular_Regular", "Lato"
+    .pipe gulp_replace "Lato_Bold_Bold", "Lato"
+    .pipe gulp_replace "MEMBER_", "M_"
+    .pipe gulp_replace "Layer", "L"
+    .pipe gulp_replace "STROKES", "S"
+    .pipe gulp_replace "FILL", "F"
+    .pipe gulp_replace "writing-mode=\"lr\"", ""
+    .pipe gulp_replace "baseline-shift=\"0%\"", ""
+    .pipe gulp_replace "kerning=\"0\"", ""
+    .pipe gulp_replace "xml:space=\"preserve\"", ""
+    .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the cost
+
+
 prefixIDs = (items, prefix)->
   for item, i in items.content
     if item.isElem()
@@ -218,8 +234,7 @@ gulp.task "activity", ()->
   js = gulp.src paths.coffee.source
     .pipe gulp_concat "activity.coffee"
     .pipe gulp_coffee()
-  svgPack = gulp.src paths.svg.pack
-    .on "error", logAndKillError
+  svgPack = fixFlashWeirdness gulp.src paths.svg.pack
     .pipe gulp_svgmin (file)->
       full: true
       plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins(file)
@@ -228,17 +243,15 @@ gulp.task "activity", ()->
     .pipe gulp_replace "<defs>", ""
     .pipe gulp_replace "</defs>", ""
     .pipe gulp_replace "</svg>", ""
+    
   
-  gulp.src paths.svg.activity
-    .on "error", logAndKillError
+  fixFlashWeirdness gulp.src paths.svg.activity
     .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
     .pipe gulp_replace /viewBox="(.*?)"/, ""
     .pipe gulp_replace /\swidth="(.*?)"/, " "
     .pipe gulp_replace /\sheight="(.*?)"/, " "
     .pipe gulp_replace /\sx="(.*?)"/, " "
     .pipe gulp_replace /\sy="(.*?)"/, " "
-    .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
-    .pipe gulp_replace "Lato_Bold_Bold", "Lato, sans-serif"
     .pipe gulp_svgmin
       full: true
       js2svg:
