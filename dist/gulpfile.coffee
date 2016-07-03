@@ -222,7 +222,6 @@ prefixIDs = (items, prefix)->
 
 
 gulp.task "activity", ()->
-  svgPath = null
   cssLibs = gulp.src main_bower_files("**/*.css"), base: "bower_components/"
   jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
   css = gulp.src paths.scss.source
@@ -252,6 +251,7 @@ gulp.task "activity", ()->
     .pipe gulp_replace /\sheight="(.*?)"/, " "
     .pipe gulp_replace /\sx="(.*?)"/, " "
     .pipe gulp_replace /\sy="(.*?)"/, " "
+    .pipe gulp_replace "<svg", "<svg font-family='Lato, sans-serif'"
     .pipe gulp_svgmin
       full: true
       js2svg:
