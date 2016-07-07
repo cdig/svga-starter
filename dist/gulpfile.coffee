@@ -245,13 +245,7 @@ gulp.task "activity", ()->
     
   
   fixFlashWeirdness gulp.src paths.svg.activity
-    .pipe gulp_replace /preserveAspectRatio="(.*?)"/, ""
-    .pipe gulp_replace /viewBox="(.*?)"/, ""
-    .pipe gulp_replace /\swidth="(.*?)"/, " "
-    .pipe gulp_replace /\sheight="(.*?)"/, " "
-    .pipe gulp_replace /\sx="(.*?)"/, " "
-    .pipe gulp_replace /\sy="(.*?)"/, " "
-    .pipe gulp_replace "<svg", "<svg font-family='Lato, sans-serif'"
+    .pipe gulp_replace /<svg .*?>/, '<svg xmlns="http://www.w3.org/2000/svg" font-family="Lato, sans-serif" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">'
     .pipe gulp_svgmin
       full: true
       js2svg:
