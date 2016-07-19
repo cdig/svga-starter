@@ -258,11 +258,11 @@ gulp.task "activity", ()->
     .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
     
-    .pipe gulp_replace "</svg>", "<!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n</svg>"
+    .pipe gulp_replace "</svg>", "</g><!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n</svg>"
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
     
-    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs>"
+    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs><g id=\"root\">"
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
     
     .pipe gulp_svgmin
