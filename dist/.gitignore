@@ -4,3 +4,7 @@ bower_components
 node_modules
 /public
 /resources
+bower.json
+gulpfile.coffee
+npm-shrinkwrap.json
+package.json
