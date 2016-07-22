@@ -254,16 +254,16 @@ gulp.task "activity", ()->
       plugins: config.svgmin.sourcePlugins
     .pipe gulp.dest "source" # overwrite the original file with optimized, pretty-printed version
     
-    .pipe gulp_replace "<defs>", "<!-- libs:css --><!-- endinject -->\n<!-- activity:css --><!-- endinject -->\n<defs>"
+    .pipe gulp_replace "</defs>", "<!-- libs:css --><!-- endinject -->\n<!-- activity:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>\n<g id=\"root\">"
+    .pipe gulp_replace "</svg>", "</g>\n</svg>"
+    
     .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
-    
-    .pipe gulp_replace "</svg>", "</g><!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n</svg>"
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
-    
-    .pipe gulp_replace "</defs>", "<!-- pack:svg --><!-- endinject --></defs><g id=\"root\">"
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
+    
+    .pipe gulp_replace /<!--.*?-->/g, ""
     
     .pipe gulp_svgmin
       full: true
