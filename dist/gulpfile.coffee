@@ -45,7 +45,7 @@ paths =
       "source/**/*.scss"
     ]
     watch: [
-      "bower_components/**/pack/**/*"
+      "bower_components/**/{dist,pack}/**/*"
       "source/**/*.coffee"
     ]
   wrapper: "bower_components/svga/dist/wrapper.html"
@@ -332,9 +332,9 @@ gulp.task "reload", (cb)->
 
 
 gulp.task "watch", (cb)->
-  gulp.watch paths.svga.watch, gulp.series "compile-svga", "reload"
-  gulp.watch paths.dev.watch, gulp.series "dev:sync", "reload"
+  gulp.watch paths.dev.watch, gulp.series "dev:sync"
   gulp.watch paths.svga.svg.source, gulp.series "beautify-svg", "compile-svga", "reload"
+  gulp.watch paths.svga.watch, gulp.series "compile-svga", "reload"
   cb()
 
 
