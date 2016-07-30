@@ -21,8 +21,7 @@
     "gulp-svgmin": "latest",
     "gulp-svgstore": "latest",
     "gulp-uglify": "latest",
-    "main-bower-files": "latest",
-    "run-sequence": "latest"
+    "main-bower-files": "latest"
   },
   "license": "UNLICENSED",
   "private": true
