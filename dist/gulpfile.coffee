@@ -4,6 +4,7 @@ chalk = require "chalk"
 del = require "del"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
+gulp_changed = require "gulp-changed"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
 gulp_inject = require "gulp-inject"
@@ -19,40 +20,35 @@ gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 main_bower_files = require "main-bower-files"
 path = require "path"
-run_sequence = require "run-sequence"
 spawn = require("child_process").spawn
 
 
 # CONFIG ##########################################################################################
 
 
-assetTypes = "cdig,gif,ico,jpeg,jpg,json,m4v,mp3,mp4,pdf,png,swf,txt,woff,woff2"
-
-
 paths =
-  activity: watch: [
-    "source/**/*"
-    "bower_components/**/pack/**/*"
-    "bower_components/**/*.{css,js}"
-  ]
-  coffee: source: [
-    "bower_components/**/pack/**/*.coffee"
-    "source/**/*.coffee"
-  ]
   dev:
     gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/{dist,pack}/**/*"
-  js: source: "bower_components/take-and-make/dist/take-and-make.js"
-  scss: source: [
-    "bower_components/**/pack/**/vars.scss"
-    "source/**/vars.scss"
-    "bower_components/**/pack/**/*.scss"
-    "source/**/*.scss"
-  ]
-  svg:
-    pack: "bower_components/**/pack/**/*.svg"
-    activity: "source/**/*.svg"
-  wrapper: html: "bower_components/svga/dist/wrapper.html"
+  svga:
+    coffee: [
+      "bower_components/**/pack/**/*.coffee"
+      "source/**/*.coffee"
+    ]
+    svg:
+      pack: "bower_components/**/pack/**/*.svg"
+      source: "source/**/*.svg"
+    scss: [
+      "bower_components/**/pack/**/vars.scss"
+      "source/**/vars.scss"
+      "bower_components/**/pack/**/*.scss"
+      "source/**/*.scss"
+    ]
+    watch: [
+      "bower_components/**/pack/**/*"
+      "source/**/*.coffee"
+    ]
+  wrapper: "bower_components/svga/dist/wrapper.html"
   
 
 config =
@@ -146,6 +142,26 @@ gulp_notify.on "click", ()->
 # HELPER FUNCTIONS ################################################################################
 
 
+# This attaches the filename to the beginning of IDs, so that identical IDs across files don't collide
+prefixIDs = (items, prefix)->
+  for item, i in items.content
+    if item.isElem()
+      item.eachAttr (attr)->
+        # id="EXAMPLE"
+        if attr.name is "id"
+          attr.value = prefix + attr.value
+        # url(#EXAMPLE)
+        else if config.svgmin.referencesProps.indexOf(attr.name) > -1
+          if attr.value.match /\burl\(("|')?#(.+?)\1\)/
+            attr.value = attr.value.replace "#", "#" + prefix
+        # href="#EXAMPLE"
+        else if attr.local is "href"
+          if attr.value.match /^#(.+?)$/
+            attr.value = attr.value.replace "#", "#" + prefix
+    prefixIDs item, prefix if item.content
+  return items
+
+
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
 
@@ -168,7 +184,7 @@ wrapJS = (src)->
   src
     .on "error", logAndKillError
     # .pipe gulp_uglify()
-    .pipe gulp_replace /^/, "<script type='text/ecmascript'><![CDATA["
+    .pipe gulp_replace /^/, "<script type='text/javascript'><![CDATA["
     .pipe gulp_replace /$/, "]]></script>"
 
 
@@ -199,53 +215,13 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the cost
 
 
-prefixIDs = (items, prefix)->
-  for item, i in items.content
-    if item.isElem()
-      item.eachAttr (attr)->
-        # id="EXAMPLE"
-        if attr.name is "id"
-          attr.value = prefix + attr.value
-        # url(#EXAMPLE)
-        else if config.svgmin.referencesProps.indexOf(attr.name) > -1
-          if attr.value.match /\burl\(("|')?#(.+?)\1\)/
-            attr.value = attr.value.replace "#", "#" + prefix
-        # href="#EXAMPLE"
-        else if attr.local is "href"
-          if attr.value.match /^#(.+?)$/
-            attr.value = attr.value.replace "#", "#" + prefix
-    prefixIDs item, prefix if item.content
-  return items
-
-
 # TASKS: ACTIVITY COMPILATION #######################################################################
 
 
-gulp.task "activity", ()->
-  cssLibs = gulp.src main_bower_files("**/*.css"), base: "bower_components/"
-  jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
-  css = gulp.src paths.scss.source
-    .pipe gulp_concat "activity.scss"
-    .pipe gulp_sass
-      errLogToConsole: true
-      outputStyle: "compressed"
-      precision: 2
-  js = gulp.src paths.coffee.source
-    .pipe gulp_concat "activity.coffee"
-    .pipe gulp_coffee()
-  svgPack = fixFlashWeirdness gulp.src paths.svg.pack
-    .pipe gulp_svgmin (file)->
-      full: true
-      plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins(file)
-    .pipe gulp_svgstore inlineSvg: true
-    .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
-    .pipe gulp_replace "<defs>", ""
-    .pipe gulp_replace "</defs>", ""
-    .pipe gulp_replace "</svg>", ""
-    
-  
-  fixFlashWeirdness gulp.src paths.svg.activity
-    .pipe gulp_replace /<svg .*?>/, '<svg xmlns="http://www.w3.org/2000/svg" font-family="Lato, sans-serif" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">'
+gulp.task "beautify-svg", ()->
+  fixFlashWeirdness gulp.src paths.svga.svg.source
+    .pipe gulp_changed "source" # This is needed or we get an infinite loop
+    .pipe gulp_replace /<svg .*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif">'
     .pipe gulp_svgmin
       full: true
       js2svg:
@@ -253,38 +229,65 @@ gulp.task "activity", ()->
         indent: "  "
       plugins: config.svgmin.sourcePlugins
     .pipe gulp.dest "source" # overwrite the original file with optimized, pretty-printed version
-    
-    .pipe gulp_replace "</defs>", "<!-- libs:css --><!-- endinject -->\n<!-- activity:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- activity:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>\n<g id=\"root\">"
-    .pipe gulp_replace "</svg>", "</g>\n</svg>"
-    
+
+
+gulp.task "compile-svga", ()->
+  cssLibs = gulp.src main_bower_files("**/*.css"), base: "bower_components/"
+  
+  jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
+  
+  css = gulp.src paths.svga.scss
+    .pipe gulp_concat "_.scss"
+    .pipe gulp_sass
+      errLogToConsole: true
+      outputStyle: "compressed"
+      precision: 2
+  
+  js = gulp.src paths.svga.coffee
+    .pipe gulp_concat "_.coffee"
+    .pipe gulp_coffee()
+  
+  svgPack = fixFlashWeirdness gulp.src paths.svga.svg.pack
+    .pipe gulp_svgmin (file)->
+      full: true
+      plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins file
+    .pipe gulp_svgstore inlineSvg: true
+    .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
+    .pipe gulp_replace "<defs>", ""
+    .pipe gulp_replace "</defs>", ""
+    .pipe gulp_replace "</svg>", ""
+  
+  gulp.src paths.svga.svg.source
+    # Inject dependencies
+    .pipe gulp_replace "</defs>", "<!-- libs:css --><!-- endinject -->\n<!-- svga:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>"
     .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
-    .pipe gulp_inject wrapCSS(css), name: "activity", transform: fileContents
+    .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
-    .pipe gulp_inject wrapJS(js), name: "activity", transform: fileContents
+    .pipe gulp_inject wrapJS(js), name: "svga", transform: fileContents
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
-    
     .pipe gulp_replace /<!--.*?-->/g, ""
-    
+    # Wrap the SVG content in a root element
+    .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
+    .pipe gulp_replace "</svg>", "</g>\n</svg>"
+    # Optimize
     .pipe gulp_svgmin
       full: true
-      js2svg:
-        pretty: true
+      js2svg: pretty: true
       plugins: config.svgmin.publicPlugins
     .pipe gulp.dest "public"
-    # .pipe browser_sync.stream # Doesn't seem to work
-    #   match: "**/*.svg"
     .pipe gulp_notify
       title: "👍"
-      message: "SVG Activity"
+      message: "SVGA"
 
 
-gulp.task "wrapper", ["activity"], ()->
-  svgPath = gulp.src "public/*.svg", read: false
-  gulp.src paths.wrapper.html
+gulp.task "wrapper", ()->
+  svgPath = gulp.src "source/*.svg", read: false
+  gulp.src paths.wrapper
+    .pipe gulp_changed "public"
     .pipe gulp_inject svgPath,
       name: "wrapper"
       transform: (filePath)->
-        filePath.replace "/public/", ""
+        filePath.replace "/source/", ""
       removeTags: true
     .pipe gulp.dest "public"
 
@@ -314,7 +317,7 @@ gulp.task "serve", ()->
   browser_sync.init
     ghostMode: false
     notify: false
-    reloadDebounce: 500
+    reloadDebounce: 30
     server:
       baseDir: "public"
       index: "wrapper.html"
@@ -323,17 +326,22 @@ gulp.task "serve", ()->
       ignoreInitial: true
 
 
-gulp.task "watch", ()->
-  gulp.watch paths.activity.watch, ["activity"]
-  gulp.watch paths.dev.watch, ["dev:sync"]
-  gulp.watch paths.wrapper.html, ["wrapper"]
-  gulp.watch "public/**/*", browser_sync.reload
+gulp.task "reload", (cb)->
+  browser_sync.reload()
+  cb()
 
 
-# This task is also used from the command line, for bulk updates
-gulp.task "recompile", (cb)->
-  run_sequence "del:public", "wrapper", cb
+gulp.task "watch", (cb)->
+  gulp.watch paths.svga.watch, gulp.series "compile-svga", "reload"
+  gulp.watch paths.dev.watch, gulp.series "dev:sync", "reload"
+  gulp.watch paths.svga.svg.source, gulp.series "beautify-svg", "compile-svga", "reload"
+  cb()
 
 
-gulp.task "default", ()->
-  run_sequence "recompile", "dev:watch", "watch", "serve"
+# This task is used from the command line, for bulk updates
+gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga", "wrapper"
+
+
+gulp.task "default",
+  gulp.series "del:public", "beautify-svg",
+    gulp.parallel "compile-svga", "wrapper", "dev:watch", "watch", "serve"
