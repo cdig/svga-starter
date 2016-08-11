@@ -225,7 +225,7 @@ fixFlashWeirdness = (src)->
 gulp.task "beautify-svg", ()->
   fixFlashWeirdness gulp.src paths.svga.svg.source
     .pipe gulp_changed "source", hasChanged: gulp_changed.compareSha1Digest # Prevents an infinite loop
-    .pipe gulp_replace /<svg .*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif">'
+    .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .pipe gulp_svgmin
       full: true
       js2svg:
