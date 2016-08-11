@@ -22,6 +22,9 @@ main_bower_files = require "main-bower-files"
 path = require "path"
 # spawn = require("child_process").spawn # Uncomment for dev:watch
 
+# STATE ##########################################################################################
+
+deploy = false
 
 # CONFIG ##########################################################################################
 
@@ -180,10 +183,11 @@ logAndKillError = (err)->
   @emit "end"
 
 
+
 wrapJS = (src)->
-  src
-    .on "error", logAndKillError
-    # .pipe gulp_uglify()
+  x = src.on "error", logAndKillError
+  x = x.pipe gulp_uglify() if deploy
+  x
     .pipe gulp_replace /^/, "<script type='text/javascript'><![CDATA["
     .pipe gulp_replace /$/, "]]></script>"
 
@@ -269,7 +273,7 @@ gulp.task "compile-svga", ()->
     # Optimize
     .pipe gulp_svgmin
       full: true
-      js2svg: pretty: true
+      js2svg: pretty: deploy
       plugins: config.svgmin.publicPlugins
     .pipe gulp.dest "public"
     .pipe gulp_notify
@@ -326,6 +330,10 @@ gulp.task "serve", ()->
       ignoreInitial: true
 
 
+gulp.task "deploy:setup", (cb)->
+  deploy = true
+  cb()
+
 gulp.task "reload", (cb)->
   browser_sync.reload()
   cb()
@@ -340,6 +348,11 @@ gulp.task "watch", (cb)->
 
 # This task is used from the command line, for bulk updates
 gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga", "wrapper"
+
+
+gulp.task "deploy",
+  gulp.series "deploy:setup", "del:public", "beautify-svg",
+    gulp.parallel "compile-svga", "wrapper"
 
 
 gulp.task "default",
