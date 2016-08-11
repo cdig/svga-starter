@@ -20,7 +20,7 @@ gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 main_bower_files = require "main-bower-files"
 path = require "path"
-spawn = require("child_process").spawn
+# spawn = require("child_process").spawn # Uncomment for dev:watch
 
 
 # CONFIG ##########################################################################################
@@ -28,8 +28,8 @@ spawn = require("child_process").spawn
 
 paths =
   dev:
-    gulp: "dev/*/gulpfile.coffee"
     watch: "dev/**/{dist,pack}/**/*"
+    # gulp: "dev/*/gulpfile.coffee" # Saved for future reference
   svga:
     coffee: [
       "bower_components/**/pack/**/*.coffee"
@@ -221,7 +221,7 @@ fixFlashWeirdness = (src)->
 gulp.task "beautify-svg", ()->
   fixFlashWeirdness gulp.src paths.svga.svg.source
     .pipe gulp_changed "source", hasChanged: gulp_changed.compareSha1Digest # Prevents an infinite loop
-    .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
+    .pipe gulp_replace /<svg .*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif">'
     .pipe gulp_svgmin
       full: true
       js2svg:
@@ -232,19 +232,17 @@ gulp.task "beautify-svg", ()->
 
 
 gulp.task "compile-svga", ()->
-  cssLibs = gulp.src main_bower_files("**/*.css"), base: "bower_components/"
-  
   jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
   
   css = gulp.src paths.svga.scss
-    .pipe gulp_concat "_.scss"
+    .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
       errLogToConsole: true
       outputStyle: "compressed"
       precision: 2
   
   js = gulp.src paths.svga.coffee
-    .pipe gulp_concat "_.coffee"
+    .pipe gulp_concat "scripts.coffee"
     .pipe gulp_coffee()
   
   svgPack = fixFlashWeirdness gulp.src paths.svga.svg.pack
@@ -259,8 +257,7 @@ gulp.task "compile-svga", ()->
   
   gulp.src paths.svga.svg.source
     # Inject dependencies
-    .pipe gulp_replace "</defs>", "<!-- libs:css --><!-- endinject -->\n<!-- svga:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>"
-    .pipe gulp_inject wrapCSS(cssLibs), name: "libs", transform: fileContents
+    .pipe gulp_replace "</defs>", "<!-- svga:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>"
     .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
     .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
     .pipe gulp_inject wrapJS(js), name: "svga", transform: fileContents
@@ -301,16 +298,20 @@ gulp.task "dev:sync", gulp_shell.task [
 ]
 
 
-gulp.task "dev:watch", (cb)->
-  gulp.src paths.dev.gulp
-    .on "data", (chunk)->
-      folder = chunk.path.replace "/gulpfile.coffee", ""
-      process.chdir folder
-      child = spawn "gulp", ["default"]
-      child.stdout.on "data", (data)->
-        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
-      process.chdir "../.."
-  cb()
+# Even though we aren't using this at the moment, let's keep it here for future reference.
+# Note: it's no longer executed by the main tasks down below.
+# Here's where you'd add it back: gulp.parallel "compile-svga", "wrapper", "dev:watch", "watch", "serve"
+#
+# gulp.task "dev:watch", (cb)->
+#   gulp.src paths.dev.gulp
+#     .on "data", (chunk)->
+#       folder = chunk.path.replace "/gulpfile.coffee", ""
+#       process.chdir folder
+#       child = spawn "gulp", ["default"]
+#       child.stdout.on "data", (data)->
+#         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
+#       process.chdir "../.."
+#   cb()
 
 
 gulp.task "serve", ()->
@@ -343,4 +344,4 @@ gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga",
 
 gulp.task "default",
   gulp.series "del:public", "beautify-svg",
-    gulp.parallel "compile-svga", "wrapper", "dev:watch", "watch", "serve"
+    gulp.parallel "compile-svga", "wrapper", "watch", "serve"

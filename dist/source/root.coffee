@@ -1,11 +1,5 @@
-Take ["Ease", "HydraulicPressure", "PointerInput", "SVGAnimation"], (Ease, HydraulicPressure, PointerInput, SVGAnimation)->
-  activity.root = (svgElement)->
+Take ["Control","Ease","FlowArrows","Pressure","Symbol"],(Control,Ease,FlowArrows,Pressure,Symbol)->
+  Symbol "SYMBOL_NAME", [], (element)->
     return scope =
-      
       setup: ()->
-        scope.animation.start()
-      
-      animation: SVGAnimation (dT, time)->
-        
-  
-  activity.registerInstance("root", "root")
+        # This one's on you.
