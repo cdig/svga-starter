@@ -1,5 +1,5 @@
 # SVGA Starter v3
-Download this project when starting a new SVGA.
+Download this project when starting a new [SVGA](https://github.com/cdig/svga).
 
 Check the [SVGA Wiki](https://github.com/cdig/svga/wiki) for more info.
 
