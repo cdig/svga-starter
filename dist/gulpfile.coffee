@@ -254,7 +254,7 @@ gulp.task "compile-svga", ()->
       full: true
       plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins file
     .pipe gulp_svgstore inlineSvg: true
-    .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
+    .pipe gulp_replace /<svg .*?>/, ""
     .pipe gulp_replace "<defs>", ""
     .pipe gulp_replace "</defs>", ""
     .pipe gulp_replace "</svg>", ""
