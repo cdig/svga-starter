@@ -199,8 +199,8 @@ wrapCSS = (src)->
       browsers: "last 5 Chrome versions, last 2 ff versions, IE >= 10, Safari >= 8, iOS >= 8"
       cascade: false
       remove: false
-    .pipe gulp_replace /^/, "<style>"
-    .pipe gulp_replace /$/, "</style>"
+    .pipe gulp_replace /^/, "<style><![CDATA["
+    .pipe gulp_replace /$/, "]]></style>"
 
 
 fixFlashWeirdness = (src)->
@@ -254,12 +254,12 @@ gulp.task "compile-svga", ()->
       full: true
       plugins: config.svgmin.sourcePlugins.concat config.svgmin.packPlugins file
     .pipe gulp_svgstore inlineSvg: true
-    .pipe gulp_replace /<svg .*?>/, ""
+    .pipe gulp_replace '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">', ""
     .pipe gulp_replace "<defs>", ""
     .pipe gulp_replace "</defs>", ""
     .pipe gulp_replace "</svg>", ""
   
-  gulp.src paths.svga.svg.source
+  compiledSvg = gulp.src paths.svga.svg.source
     # Inject dependencies
     .pipe gulp_replace "</defs>", "<!-- svga:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>"
     .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
@@ -275,22 +275,20 @@ gulp.task "compile-svga", ()->
       full: true
       js2svg: pretty: deploy
       plugins: config.svgmin.publicPlugins
+  
+  name = null
+  gulp.src paths.wrapper
+    .pipe gulp_inject compiledSvg,
+      name: "wrapper"
+      removeTags: true
+      transform: fileContents = (filePath, file)->
+        name = filePath.replace "/source/", ""
+        return file.contents.toString "utf8"
+    # .pipe gulp_rename name
     .pipe gulp.dest "public"
     .pipe gulp_notify
       title: "👍"
       message: "SVGA"
-
-
-gulp.task "wrapper", ()->
-  svgPath = gulp.src "source/*.svg", read: false
-  gulp.src paths.wrapper
-    .pipe gulp_changed "public"
-    .pipe gulp_inject svgPath,
-      name: "wrapper"
-      transform: (filePath)->
-        filePath.replace "/source/", ""
-      removeTags: true
-    .pipe gulp.dest "public"
 
 
 gulp.task "del:public", ()->
@@ -304,7 +302,7 @@ gulp.task "dev:sync", gulp_shell.task [
 
 # Even though we aren't using this at the moment, let's keep it here for future reference.
 # Note: it's no longer executed by the main tasks down below.
-# Here's where you'd add it back: gulp.parallel "compile-svga", "wrapper", "dev:watch", "watch", "serve"
+# Here's where you'd add it back: gulp.parallel "compile-svga", "dev:watch", "watch", "serve"
 #
 # gulp.task "dev:watch", (cb)->
 #   gulp.src paths.dev.gulp
@@ -334,6 +332,7 @@ gulp.task "deploy:setup", (cb)->
   deploy = true
   cb()
 
+
 gulp.task "reload", (cb)->
   browser_sync.reload()
   cb()
@@ -347,14 +346,13 @@ gulp.task "watch", (cb)->
 
 
 # This task is used from the command line, for bulk updates
-gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga", "wrapper"
+gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga"
 
 
 gulp.task "deploy",
-  gulp.series "deploy:setup", "del:public", "beautify-svg",
-    gulp.parallel "compile-svga", "wrapper"
+  gulp.series "deploy:setup", "del:public", "beautify-svg", "compile-svga"
 
 
 gulp.task "default",
-  gulp.series "del:public", "beautify-svg",
-    gulp.parallel "compile-svga", "wrapper", "watch", "serve"
+  gulp.series "del:public", "dev:sync", "beautify-svg",
+    gulp.parallel "compile-svga", "watch", "serve"
