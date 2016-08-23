@@ -284,6 +284,7 @@ gulp.task "compile-svga", ()->
         svgName = filePath.replace "/source/", ""
         return file.contents.toString "utf8"
     .pipe gulp_rename (path)->
+      if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
       path.basename = svgName.replace ".svg", ""
     .pipe gulp.dest "public"
     .pipe gulp_notify
@@ -317,6 +318,7 @@ gulp.task "dev:sync", gulp_shell.task [
 
 
 gulp.task "serve", ()->
+  if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
   browser_sync.init
     ghostMode: false
     notify: false
