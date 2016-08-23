@@ -25,6 +25,7 @@ path = require "path"
 # STATE ##########################################################################################
 
 deploy = false
+svgName = null
 
 # CONFIG ##########################################################################################
 
@@ -276,15 +277,14 @@ gulp.task "compile-svga", ()->
       js2svg: pretty: deploy
       plugins: config.svgmin.publicPlugins
   
-  name = null
   gulp.src paths.wrapper
     .pipe gulp_inject compiledSvg,
       name: "wrapper"
-      removeTags: true
-      transform: fileContents = (filePath, file)->
-        name = filePath.replace "/source/", ""
+      transform: (filePath, file)->
+        svgName = filePath.replace "/source/", ""
         return file.contents.toString "utf8"
-    # .pipe gulp_rename name
+    .pipe gulp_rename (path)->
+      path.basename = svgName.replace ".svg", ""
     .pipe gulp.dest "public"
     .pipe gulp_notify
       title: "👍"
@@ -302,7 +302,7 @@ gulp.task "dev:sync", gulp_shell.task [
 
 # Even though we aren't using this at the moment, let's keep it here for future reference.
 # Note: it's no longer executed by the main tasks down below.
-# Here's where you'd add it back: gulp.parallel "compile-svga", "dev:watch", "watch", "serve"
+# Here's where you'd add it back: gulp.series "compile-svga", "dev:watch", "watch", "serve"
 #
 # gulp.task "dev:watch", (cb)->
 #   gulp.src paths.dev.gulp
@@ -322,7 +322,7 @@ gulp.task "serve", ()->
     notify: false
     server:
       baseDir: "public"
-      index: "wrapper.html"
+      index: svgName.replace ".svg", ".html" # Set by compile-svg
     ui: false
     watchOptions:
       ignoreInitial: true
@@ -331,7 +331,6 @@ gulp.task "serve", ()->
 gulp.task "deploy:setup", (cb)->
   deploy = true
   cb()
-
 
 gulp.task "reload", (cb)->
   browser_sync.reload()
@@ -354,5 +353,4 @@ gulp.task "deploy",
 
 
 gulp.task "default",
-  gulp.series "del:public", "dev:sync", "beautify-svg",
-    gulp.parallel "compile-svga", "watch", "serve"
+  gulp.series "del:public", "dev:sync", "beautify-svg", "compile-svga", "watch", "serve"
