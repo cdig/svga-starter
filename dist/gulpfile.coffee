@@ -274,7 +274,7 @@ gulp.task "compile-svga", ()->
     # Optimize
     .pipe gulp_svgmin
       full: true
-      js2svg: pretty: deploy
+      js2svg: pretty: !deploy
       plugins: config.svgmin.publicPlugins
   
   gulp.src paths.wrapper
