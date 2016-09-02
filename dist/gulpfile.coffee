@@ -189,8 +189,6 @@ wrapJS = (src)->
   x = src.on "error", logAndKillError
   x = x.pipe gulp_uglify() if deploy
   x
-    .pipe gulp_replace /^/, "<script type='text/javascript'><![CDATA["
-    .pipe gulp_replace /$/, "]]></script>"
 
 
 wrapCSS = (src)->
@@ -262,20 +260,20 @@ gulp.task "compile-svga", ()->
   
   compiledSvg = gulp.src paths.svga.svg.source
     # Inject dependencies
-    .pipe gulp_replace "</defs>", "<!-- svga:css --><!-- endinject -->\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n<!-- pack:svg --><!-- endinject -->\n</defs>"
-    .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
-    .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
-    .pipe gulp_inject wrapJS(js), name: "svga", transform: fileContents
-    .pipe gulp_inject svgPack, name: "pack", transform: fileContents
-    .pipe gulp_replace /<!--.*?-->/g, ""
     # Wrap the SVG content in a root element
-    .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
+    .pipe gulp_replace "</defs>", "<!-- svga:css --><!-- endinject --><!-- pack:svg --><!-- endinject -->\n</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
     # Optimize
     .pipe gulp_svgmin
       full: true
       js2svg: pretty: !deploy
       plugins: config.svgmin.publicPlugins
+    .pipe gulp_replace "</svg>", "</svg>\n<script>\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n</script>"
+    .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
+    .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
+    .pipe gulp_inject wrapJS(js), name: "svga", transform: fileContents
+    .pipe gulp_inject svgPack, name: "pack", transform: fileContents
+    .pipe gulp_replace /<!--.*?-->/g, ""
   
   gulp.src paths.wrapper
     .pipe gulp_inject compiledSvg,
