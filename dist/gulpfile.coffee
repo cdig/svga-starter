@@ -198,8 +198,8 @@ wrapCSS = (src)->
       browsers: "last 5 Chrome versions, last 2 ff versions, IE >= 10, Safari >= 8, iOS >= 8"
       cascade: false
       remove: false
-    .pipe gulp_replace /^/, "<style><![CDATA["
-    .pipe gulp_replace /$/, "]]></style>"
+    .pipe gulp_replace /^/, "<style>"
+    .pipe gulp_replace /$/, "</style>"
 
 
 fixFlashWeirdness = (src)->
