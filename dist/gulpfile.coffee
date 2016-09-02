@@ -205,8 +205,8 @@ wrapCSS = (src)->
 fixFlashWeirdness = (src)->
   src
     .on "error", logAndKillError
-    .pipe gulp_replace "Lato_Regular_Regular", "Lato"
-    .pipe gulp_replace "Lato_Bold_Bold", "Lato"
+    .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
+    .pipe gulp_replace "Lato_Bold_Bold", "Lato, sans-serif"
     .pipe gulp_replace "MEMBER_", "M_"
     .pipe gulp_replace "Layer", "L"
     .pipe gulp_replace "STROKES", "S"
