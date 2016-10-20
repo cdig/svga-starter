@@ -284,6 +284,7 @@ gulp.task "compile-svga", ()->
     .pipe gulp_rename (path)->
       if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
       path.basename = svgName.replace ".svg", ""
+      path.basename += ".min" if deploy
     .pipe gulp.dest "public"
     .pipe gulp_notify
       title: "👍"
