@@ -2,6 +2,10 @@
   "name": "svga-project",
   "version": "4.0.0",
   "description": "An SVGA Project",
+  "dependencies": {
+    "svga": "cdig/svga#v3",
+    "take-and-make": "cdig/take-and-make#v3"
+  },
   "devDependencies": {
     "beepbeep": "latest",
     "browser-sync": "latest",
