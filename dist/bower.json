@@ -1,0 +1,13 @@
+{
+  "name": "svga-project",
+  "version": "4.0.0",
+  "description": "An SVGA Project",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": [],
+  "ignore": [],
+  "dependencies": {
+    "svga": "cdig/svga#v4",
+    "take-and-make": "cdig/take-and-make#v4"
+  }
+}
