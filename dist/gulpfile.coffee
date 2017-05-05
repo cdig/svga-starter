@@ -24,7 +24,7 @@ path = require "path"
 
 # STATE ##########################################################################################
 
-deploy = false
+prod = false
 svgName = null
 
 # CONFIG ##########################################################################################
@@ -187,7 +187,7 @@ logAndKillError = (err)->
 
 wrapJS = (src)->
   x = src.on "error", logAndKillError
-  x = x.pipe gulp_uglify() if deploy
+  x = x.pipe gulp_uglify() if prod
   x
 
 
@@ -266,7 +266,7 @@ gulp.task "compile-svga", ()->
     # Optimize
     .pipe gulp_svgmin
       full: true
-      js2svg: pretty: !deploy
+      js2svg: pretty: !prod
       plugins: config.svgmin.publicPlugins
     .pipe gulp_replace "</svg>", "</svg>\n<script>\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n</script>"
     .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
@@ -284,7 +284,7 @@ gulp.task "compile-svga", ()->
     .pipe gulp_rename (path)->
       if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
       path.basename = svgName.replace ".svg", ""
-      path.basename += ".min" if deploy
+      path.basename += ".min" if prod
     .pipe gulp.dest "public"
     .pipe gulp_notify
       title: "👍"
@@ -329,8 +329,8 @@ gulp.task "serve", ()->
       ignoreInitial: true
 
 
-gulp.task "deploy:setup", (cb)->
-  deploy = true
+gulp.task "prod:setup", (cb)->
+  prod = true
   cb()
 
 gulp.task "reload", (cb)->
@@ -349,8 +349,8 @@ gulp.task "watch", (cb)->
 gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga"
 
 
-gulp.task "deploy",
-  gulp.series "deploy:setup", "del:public", "beautify-svg", "compile-svga"
+gulp.task "prod",
+  gulp.series "prod:setup", "del:public", "beautify-svg", "compile-svga"
 
 
 gulp.task "default",
