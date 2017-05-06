@@ -1,6 +1,7 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
+crypto = require "crypto"
 del = require "del"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
@@ -279,7 +280,10 @@ gulp.task "compile-svga", ()->
     .pipe gulp_inject compiledSvg,
       name: "wrapper"
       transform: (filePath, file)->
-        svgName = filePath.replace "/source/", ""
+        # This is a side-effectful hack, so we can use the file hash in gulp_rename
+        md5 = crypto.createHash "md5"
+        md5.update file.contents, "utf8"
+        svgName = md5.digest "hex"
         return file.contents.toString "utf8"
     .pipe gulp_rename (path)->
       if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
