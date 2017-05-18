@@ -14,19 +14,23 @@ gulp_rename = require "gulp-rename"
 gulp_replace = require "gulp-replace"
 gulp_sass = require "gulp-sass"
 gulp_shell = require "gulp-shell"
-# gulp_sourcemaps = require "gulp-sourcemaps" # Uncomment and npm install for debug
+gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_svgstore = require "gulp-svgstore"
 gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 main_bower_files = require "main-bower-files"
 path = require "path"
-# spawn = require("child_process").spawn # Uncomment for dev:watch
+spawn = require("child_process").spawn
+
 
 # STATE ##########################################################################################
 
+
 prod = false
 svgName = null
+watching = false
+
 
 # CONFIG ##########################################################################################
 
@@ -118,9 +122,7 @@ config =
         leadingZero: false
         negativeExtraSpace: false
       }
-      {cleanupNumericValues:
-        floatPrecision: 2
-      }
+      {cleanupNumericValues: floatPrecision: 2}
       # {moveElemsAttrsToGroup: true}
       {removeEmptyContainers: true}
       {sortAttrs: true}
@@ -166,10 +168,8 @@ prefixIDs = (items, prefix)->
     prefixIDs item, prefix if item.content
   return items
 
-
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
-
 
 logAndKillError = (err)->
   beepbeep()
@@ -184,13 +184,39 @@ logAndKillError = (err)->
     )(err)
   @emit "end"
 
+cond = (predicate, action)->
+  if predicate
+    action()
+  else
+    # This is what we use as a noop *shrug*
+    gulp_rename (p)-> p
 
+changed = ()->
+  cond watching, ()->
+    gulp_changed "public", hasChanged: gulp_changed.compareSha1Digest
+
+stream = (glob)->
+  cond watching, ()->
+    browser_sync.stream match: glob
+
+initMaps = ()->
+  cond !prod, ()->
+    gulp_sourcemaps.init()
+
+emitMaps = ()->
+  cond !prod, ()->
+    gulp_sourcemaps.write "."
+
+notify = (msg)->
+  cond watching, ()->
+    gulp_notify
+      title: "👍"
+      message: msg
 
 wrapJS = (src)->
   x = src.on "error", logAndKillError
   x = x.pipe gulp_uglify() if prod
   x
-
 
 wrapCSS = (src)->
   src
@@ -201,7 +227,6 @@ wrapCSS = (src)->
       remove: false
     .pipe gulp_replace /^/, "<style>"
     .pipe gulp_replace /$/, "</style>"
-
 
 fixFlashWeirdness = (src)->
   src
@@ -224,7 +249,7 @@ fixFlashWeirdness = (src)->
 
 gulp.task "beautify-svg", ()->
   fixFlashWeirdness gulp.src paths.svga.svg.source
-    .pipe gulp_changed "source", hasChanged: gulp_changed.compareSha1Digest # Prevents an infinite loop
+    .pipe changed()
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .pipe gulp_svgmin
       full: true
@@ -280,31 +305,22 @@ gulp.task "compile-svga", ()->
     .pipe gulp_inject compiledSvg,
       name: "wrapper"
       transform: (filePath, file)->
-        # This is a side-effectful hack, so we can use the file hash in gulp_rename and the name in serve
-        if prod
-          md5 = crypto.createHash "md5"
-          md5.update file.contents, "utf8"
-          svgName = md5.digest "hex"
-        else
-          svgName = "dev.svg"
+        svgName = path.basename(file)
         return file.contents.toString "utf8"
     .pipe gulp_rename (path)->
       if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
       path.basename = svgName.replace ".svg", ""
       path.basename += ".min" if prod
     .pipe gulp.dest "public"
-    .pipe gulp_notify
-      title: "👍"
-      message: "SVGA"
+    .pipe notify "SVGA"
 
 
-gulp.task "del:public", ()->
-  del "public"
-
-
-gulp.task "dev:sync", gulp_shell.task [
+gulp.task "dev", gulp_shell.task [
   "if [ -d 'dev' ]; then rsync --exclude '*/.git/' --delete -ar dev/* bower_components; fi"
 ]
+
+
+# TASKS: SYSTEM ###################################################################################
 
 
 # Even though we aren't using this at the moment, let's keep it here for future reference.
@@ -323,6 +339,35 @@ gulp.task "dev:sync", gulp_shell.task [
 #   cb()
 
 
+gulp.task "del:public", ()->
+  del "public"
+
+
+gulp.task "del:deploy", ()->
+  del "deploy"
+
+
+gulp.task "prod:setup", (cb)->
+  prod = true
+  cb()
+
+
+gulp.task "reload", (cb)->
+  browser_sync.reload()
+  cb()
+
+
+gulp.task "rev", ()->
+  gulp.src "public/**"
+    .pipe gulp_rename (path)->
+      md5 = crypto.createHash "md5"
+      md5.update file.contents, "utf8"
+      name = md5.digest "hex"
+      gulp_shell.task("rm -rf .deploy && mkdir .deploy && touch .deploy/#{name}")()
+      name
+    .pipe gulp.dest "deploy"
+
+
 gulp.task "serve", ()->
   if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
   browser_sync.init
@@ -336,29 +381,21 @@ gulp.task "serve", ()->
       ignoreInitial: true
 
 
-gulp.task "prod:setup", (cb)->
-  prod = true
-  cb()
-
-gulp.task "reload", (cb)->
-  browser_sync.reload()
-  cb()
-
-
 gulp.task "watch", (cb)->
-  gulp.watch paths.dev.watch, gulp.series "dev:sync"
+  watching = true
+  gulp.watch paths.dev.watch, gulp.series "dev"
   gulp.watch paths.svga.svg.source, gulp.series "beautify-svg", "compile-svga", "reload"
   gulp.watch paths.svga.watch, gulp.series "compile-svga", "reload"
   cb()
 
 
-# This task is used from the command line, for bulk updates
-gulp.task "recompile", gulp.series "del:public", "beautify-svg", "compile-svga"
+gulp.task "recompile",
+  gulp.series "del:public", "dev", "beautify-svg", "compile-svga"
 
 
 gulp.task "prod",
-  gulp.series "prod:setup", "del:public", "beautify-svg", "compile-svga"
+  gulp.series "prod:setup", "recompile", "del:deploy", "rev"
 
 
 gulp.task "default",
-  gulp.series "del:public", "dev:sync", "beautify-svg", "compile-svga", "watch", "serve"
+  gulp.series "recompile", "watch", "serve"
