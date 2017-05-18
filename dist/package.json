@@ -16,6 +16,7 @@
     "gulp-coffee": "latest",
     "gulp-concat": "latest",
     "gulp-inject": "latest",
+    "gulp-natural-sort": "latest",
     "gulp-notify": "latest",
     "gulp-rename": "latest",
     "gulp-replace": "latest",

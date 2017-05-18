@@ -9,6 +9,7 @@ gulp_changed = require "gulp-changed"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
 gulp_inject = require "gulp-inject"
+gulp_natural_sort = require "gulp-natural-sort"
 gulp_notify = require "gulp-notify"
 gulp_rename = require "gulp-rename"
 gulp_replace = require "gulp-replace"
@@ -265,6 +266,7 @@ gulp.task "compile-svga", ()->
   jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
   
   css = gulp.src paths.svga.scss
+    .pipe gulp_natural_sort()
     .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
       errLogToConsole: true
@@ -272,6 +274,7 @@ gulp.task "compile-svga", ()->
       precision: 2
   
   js = gulp.src paths.svga.coffee
+    .pipe gulp_natural_sort()
     .pipe gulp_concat "scripts.coffee"
     .pipe gulp_coffee()
   
