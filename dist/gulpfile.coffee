@@ -27,6 +27,7 @@ spawn = require("child_process").spawn
 # STATE ##########################################################################################
 
 
+hashName = null
 prod = false
 svgName = null
 watching = false
@@ -305,7 +306,11 @@ gulp.task "compile-svga", ()->
     .pipe gulp_inject compiledSvg,
       name: "wrapper"
       transform: (filePath, file)->
-        svgName = path.basename(file)
+        if prod
+          md5 = crypto.createHash "md5"
+          md5.update file.contents, "utf8"
+          hashName = md5.digest("hex") + ".html"
+        svgName = path.basename(filePath)
         return file.contents.toString "utf8"
     .pipe gulp_rename (path)->
       if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
@@ -360,11 +365,8 @@ gulp.task "reload", (cb)->
 gulp.task "rev", ()->
   gulp.src "public/**"
     .pipe gulp_rename (path)->
-      md5 = crypto.createHash "md5"
-      md5.update file.contents, "utf8"
-      name = md5.digest "hex"
-      gulp_shell.task("rm -rf .deploy && mkdir .deploy && touch .deploy/#{name}")()
-      name
+      gulp_shell.task("rm -rf .deploy && mkdir .deploy && touch .deploy/#{hashName}")()
+      path.basename = hashName
     .pipe gulp.dest "deploy"
 
 
