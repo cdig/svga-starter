@@ -1,8 +1,10 @@
+.deploy
 .DS_Store
 bower_components
-/dev
-/dist
+deploy
+dev
+dist
 node_modules
-/public
-/resources
+public
+resources
 yarn.lock
