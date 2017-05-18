@@ -21,6 +21,7 @@
     "gulp-replace": "latest",
     "gulp-sass": "latest",
     "gulp-shell": "latest",
+    "gulp-sourcemaps": "latest",
     "gulp-svgmin": "latest",
     "gulp-svgstore": "latest",
     "gulp-uglify": "latest",
