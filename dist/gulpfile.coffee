@@ -36,7 +36,7 @@ watching = false
 # CONFIG ##########################################################################################
 
 
-assetPacks = "svga"
+assetPacks = "{pressure,svga}"
 
 
 paths =
