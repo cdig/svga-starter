@@ -20,7 +20,6 @@ gulp_svgmin = require "gulp-svgmin"
 gulp_svgstore = require "gulp-svgstore"
 gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
-main_bower_files = require "main-bower-files"
 path = require "path"
 spawn = require("child_process").spawn
 
@@ -37,29 +36,36 @@ watching = false
 # CONFIG ##########################################################################################
 
 
+assetPacks = "svga"
+
+
 paths =
   dev:
     watch: "dev/**/{dist,pack}/**/*"
     # gulp: "dev/*/gulpfile.coffee" # Saved for future reference
   svga:
     coffee: [
-      "bower_components/**/pack/**/*.coffee"
+      "node_modules/#{assetPacks}/pack/**/*.coffee"
       "source/**/*.coffee"
     ]
+    libs:
+      js: [
+        "node_modules/take-and-make/dist/take-and-make.js"
+      ]
     svg:
-      pack: "bower_components/**/pack/**/*.svg"
+      pack: "node_modules/#{assetPacks}/pack/**/*.svg"
       source: "source/**/*.svg"
     scss: [
-      "bower_components/**/pack/**/vars.scss"
+      "node_modules/#{assetPacks}/pack/**/vars.scss"
       "source/**/vars.scss"
-      "bower_components/**/pack/**/*.scss"
+      "node_modules/#{assetPacks}/pack/**/*.scss"
       "source/**/*.scss"
     ]
     watch: [
-      "bower_components/**/{dist,pack}/**/*"
+      "node_modules/**/{dist,pack}/**/*"
       "source/**/*.coffee"
     ]
-  wrapper: "bower_components/svga/dist/wrapper.html"
+  wrapper: "node_modules/svga/dist/wrapper.html"
   
 
 config =
@@ -263,7 +269,7 @@ gulp.task "beautify-svg", ()->
 
 
 gulp.task "compile-svga", ()->
-  jsLibs = gulp.src main_bower_files("**/*.js"), base: "bower_components/"
+  jsLibs = gulp.src paths.svga.libs.js
   
   css = gulp.src paths.svga.scss
     .pipe gulp_natural_sort()
@@ -324,7 +330,7 @@ gulp.task "compile-svga", ()->
 
 
 gulp.task "dev", gulp_shell.task [
-  "if [ -d 'dev' ]; then rsync --exclude '*/.git/' --delete -ar dev/* bower_components; fi"
+  "if [ -d 'dev' ]; then rsync --exclude '*/.git/' --delete -ar dev/* node_modules; fi"
 ]
 
 

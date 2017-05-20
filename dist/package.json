@@ -26,6 +26,7 @@
     "gulp-svgmin": "latest",
     "gulp-svgstore": "latest",
     "gulp-uglify": "latest",
-    "main-bower-files": "latest"
+    "svga": "cdig/svga#v4",
+    "take-and-make": "cdig/take-and-make#v4"
   }
 }
