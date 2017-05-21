@@ -1,10 +1,8 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
-crypto = require "crypto"
 del = require "del"
 gulp = require "gulp"
-gulp_autoprefixer = require "gulp-autoprefixer"
 gulp_changed = require "gulp-changed"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
@@ -15,11 +13,9 @@ gulp_notify = require "gulp-notify"
 gulp_rename = require "gulp-rename"
 gulp_replace = require "gulp-replace"
 gulp_rev_all = require "gulp-rev-all"
-gulp_sass = require "gulp-sass"
 gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
-gulp_svgstore = require "gulp-svgstore"
 gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 path = require "path"
@@ -40,103 +36,76 @@ assetPacks = "{pressure,svga}"
 
 
 paths =
-  coffee:
-    pack: "node_modules/#{assetPacks}/pack/**/*.coffee"
-    source: "source/**/*.coffee"
+  coffee: "source/**/*.coffee"
   dev:
-    watch: "dev/**/{dist,pack}/**/*"
-    # gulp: "dev/*/gulpfile.coffee" # Saved for future reference
-  libs:
-    js: "node_modules/take-and-make/dist/take-and-make.js"
-  scss:
-    pack: "node_modules/#{assetPacks}/pack/**/*.scss"
-  svg: "source/**/*.svg"
-  watch: [
-    "node_modules/**/{dist,pack}/**/*"
-    "source/**/*.coffee"
+    gulp: "dev/*/gulpfile.coffee"
+    watch: "dev/**/dist/**/*"
+  libs: [
+    "node_modules/take-and-make/dist/take-and-make.js"
+    "node_modules/pressure/dist/pressure.js"
+    "node_modules/svga/dist/svga.css"
+    "node_modules/svga/dist/svga.js"
   ]
-  wrapper: "node_modules/svga/dist/wrapper.html"
+  svg: "source/**/*.svg"
+  wrapper: "node_modules/svga/dist/index.html"
   
 
 config =
-  svgmin:
-    packPlugins: (file)-> [
-      prefixIDsWithFileName:
-        type: "full"
-        fn: (data)->
-          prefix = path.basename file.relative, path.extname file.relative
-          prefixIDs data, prefix + "_"
-    ]
-    publicPlugins: [
-      {minifyStyles: true}
-    ]
-    sourcePlugins: [
-      {cleanupAttrs: true}
-      {removeDoctype: true}
-      {removeComments: true}
-      {removeMetadata: true}
-      {removeTitle: true}
-      {removeUselessDefs: true}
-      {removeEditorsNSData: true}
-      {removeEmptyAttrs: true}
-      {removeHiddenElems: true}
-      {removeEmptyText: true}
-      {removeEmptyContainers: true}
-      # {minifyStyles: true}
-      # {convertStyleToAttrs: true}
-      {convertColors:
-        names2hex: true
-        rgb2hex: true
+  svgmin_plugins: [
+    {cleanupAttrs: true}
+    {removeDoctype: true}
+    {removeComments: true}
+    {removeMetadata: true}
+    {removeTitle: true}
+    {removeUselessDefs: true}
+    {removeEditorsNSData: true}
+    {removeEmptyAttrs: true}
+    {removeHiddenElems: true}
+    {removeEmptyText: true}
+    {removeEmptyContainers: true}
+    # {minifyStyles: true}
+    # {convertStyleToAttrs: true}
+    {convertColors:
+      names2hex: true
+      rgb2hex: true
+    }
+    {convertPathData:
+      applyTransforms: true
+      applyTransformsStroked: true
+      makeArcs: {
+        threshold: 20 # coefficient of rounding error
+        tolerance: 10  # percentage of radius
       }
-      {convertPathData:
-        applyTransforms: true
-        applyTransformsStroked: true
-        makeArcs: {
-          threshold: 20 # coefficient of rounding error
-          tolerance: 10  # percentage of radius
-        }
-        straightCurves: true
-        lineShorthands: true
-        curveSmoothShorthands: true
-        floatPrecision: 2
-        transformPrecision: 2
-        removeUseless: true
-        collapseRepeated: true
-        utilizeAbsolute: true
-        leadingZero: false
-        negativeExtraSpace: true
-      }
-      {convertTransform:
-        convertToShorts: true
-        degPrecision: 2 # transformPrecision (or matrix precision) - 2 by default
-        floatPrecision: 2
-        transformPrecision: 2
-        matrixToTransform: false # Setting to true causes an error because of the inverse() call in SVG Mask
-        shortTranslate: true
-        shortScale: true
-        shortRotate: true
-        removeUseless: true
-        collapseIntoOne: true
-        leadingZero: false
-        negativeExtraSpace: false
-      }
-      {cleanupNumericValues: floatPrecision: 2}
-      # {moveElemsAttrsToGroup: true}
-      {removeEmptyContainers: true}
-      {sortAttrs: true}
-    ]
-    referencesProps: [
-      "clip-path"
-      "color-profile"
-      "fill"
-      "filter"
-      "marker-start"
-      "marker-mid"
-      "marker-end"
-      "mask"
-      "stroke"
-      "style"
-    ]
+      straightCurves: true
+      lineShorthands: true
+      curveSmoothShorthands: true
+      floatPrecision: 2
+      transformPrecision: 2
+      removeUseless: true
+      collapseRepeated: true
+      utilizeAbsolute: true
+      leadingZero: false
+      negativeExtraSpace: true
+    }
+    {convertTransform:
+      convertToShorts: true
+      degPrecision: 2 # transformPrecision (or matrix precision) - 2 by default
+      floatPrecision: 2
+      transformPrecision: 2
+      matrixToTransform: false # Setting to true causes an error because of the inverse() call in SVG Mask
+      shortTranslate: true
+      shortScale: true
+      shortRotate: true
+      removeUseless: true
+      collapseIntoOne: true
+      leadingZero: false
+      negativeExtraSpace: false
+    }
+    {cleanupNumericValues: floatPrecision: 2}
+    # {moveElemsAttrsToGroup: true}
+    {removeEmptyContainers: true}
+    {sortAttrs: true}
+  ]
 
 
 gulp_notify.logLevel(0)
@@ -146,25 +115,6 @@ gulp_notify.on "click", ()->
 
 # HELPER FUNCTIONS ################################################################################
 
-
-# This attaches the filename to the beginning of IDs, so that identical IDs across files don't collide
-prefixIDs = (items, prefix)->
-  for item, i in items.content
-    if item.isElem()
-      item.eachAttr (attr)->
-        # id="EXAMPLE"
-        if attr.name is "id"
-          attr.value = prefix + attr.value
-        # url(#EXAMPLE)
-        else if config.svgmin.referencesProps.indexOf(attr.name) > -1
-          if attr.value.match /\burl\(("|')?#(.+?)\1\)/
-            attr.value = attr.value.replace "#", "#" + prefix
-        # href="#EXAMPLE"
-        else if attr.local is "href"
-          if attr.value.match /^#(.+?)$/
-            attr.value = attr.value.replace "#", "#" + prefix
-    prefixIDs item, prefix if item.content
-  return items
 
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
@@ -189,9 +139,9 @@ cond = (predicate, action)->
     # This is what we use as a noop *shrug*
     gulp_rename (p)-> p
 
-changed = ()->
+changed = (path = "public")->
   cond watching, ()->
-    gulp_changed "public", hasChanged: gulp_changed.compareSha1Digest
+    gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
 
 stream = (glob)->
   cond watching, ()->
@@ -211,15 +161,6 @@ notify = (msg)->
       title: "👍"
       message: msg
 
-minify_html = ()->
-  cond prod, ()->
-    gulp_htmlmin
-      collapseWhitespace: true
-      collapseBooleanAttributes: true
-      collapseInlineTagWhitespace: true
-      includeAutoGeneratedTags: false
-      removeComments: true
-
 fixFlashWeirdness = (src)->
   src
     .on "error", logAndKillError
@@ -236,85 +177,57 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the cost
 
 
-# TASKS: ACTIVITY COMPILATION #######################################################################
+# TASKS: COMPILATION ##############################################################################
 
 
+# This task MUST be idempotent, since it overwrites the original file
 gulp.task "beautify-svg", ()->
   fixFlashWeirdness gulp.src paths.svg
-    .pipe changed()
+    .pipe changed "source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
+    .on "error", logAndKillError
     .pipe gulp_svgmin
       full: true
       js2svg:
         pretty: true
         indent: "  "
-      plugins: config.svgmin.sourcePlugins
-    .pipe gulp.dest "source" # overwrite the original file with optimized, pretty-printed version
+      plugins: config.svgmin_plugins
+    .pipe gulp.dest "source"
 
 
-gulp.task "compile-svga", ()->
-  cssPack = gulp.src paths.scss.pack
+gulp.task "coffee:source", ()->
+  gulp.src paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
-    .pipe gulp_concat "styles.scss"
-    .pipe gulp_sass
-      errLogToConsole: true
-      outputStyle: "compressed"
-      precision: 2
-    .pipe gulp_autoprefixer
-      browsers: "last 5 Chrome versions, last 2 ff versions, IE >= 10, Safari >= 8, iOS >= 8"
-      cascade: false
-      remove: false
-    .pipe emitMaps()
-    .pipe gulp.dest "public"
-  
-  jsLibs = gulp.src paths.libs.js
-    .pipe gulp_uglify()
-    .pipe initMaps()
-    .pipe emitMaps()
-    .pipe gulp.dest "public"
-  
-  jsPack = gulp.src paths.coffee.pack
-    .pipe gulp_natural_sort()
-    .pipe initMaps()
-    .pipe gulp_concat "pack-scripts.coffee"
+    .pipe gulp_concat "source.coffee"
     .pipe gulp_coffee()
-    .pipe gulp_uglify()
+    .on "error", logAndKillError
+    .pipe cond prod, gulp_uglify
     .pipe emitMaps()
     .pipe gulp.dest "public"
+    .pipe stream "**/*.js"
+    .pipe notify "Coffee"
 
-  jsSource = gulp.src paths.coffee.source
-    .pipe gulp_natural_sort()
-    .pipe initMaps()
-    .pipe gulp_concat "source-scripts.coffee"
-    .pipe gulp_coffee()
-    .pipe gulp_uglify()
-    .pipe emitMaps()
-    .pipe gulp.dest "public"
-    
-  sourceSvg = gulp.src paths.svg
-    # Inject dependencies
-    # Wrap the SVG content in a root element
+
+gulp.task "wrap-svg", ()->
+  libs = gulp.src paths.libs
+    .pipe gulp.dest "public/_libs"
+  svgSource = gulp.src paths.svg
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
-    # Optimize
-    .pipe gulp_svgmin
-      full: true
-      js2svg: pretty: !prod
-      plugins: config.svgmin.publicPlugins
-  
   gulp.src paths.wrapper
-    .pipe gulp_inject sourceSvg, name: "source", transform: fileContents
-    .pipe gulp_inject cssPack, name: "pack", ignorePath: "/public/", addRootSlash: false
-    .pipe gulp_inject jsLibs, name: "libs", ignorePath: "/public/", addRootSlash: false
-    .pipe gulp_inject jsPack, name: "pack", ignorePath: "/public/", addRootSlash: false
-    .pipe gulp_inject jsSource, name: "source", ignorePath: "/public/", addRootSlash: false
-    .pipe minify_html()
-    .pipe gulp_rename (path)->
-      path.basename = "index"
-      path.extname = ".html"
+    .pipe gulp_inject svgSource, name: "source", transform: fileContents
+    .pipe gulp_inject libs, name: "libs", ignorePath: "/public/", addRootSlash: false
+    .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
+    .pipe cond prod, ()-> gulp_htmlmin
+      collapseWhitespace: true
+      collapseBooleanAttributes: true
+      collapseInlineTagWhitespace: true
+      includeAutoGeneratedTags: false
+      removeComments: true
+    .on "error", logAndKillError
     .pipe gulp.dest "public"
-    .pipe notify "SVGA"
+    .pipe notify "SVG"
 
 
 gulp.task "dev", gulp_shell.task [
@@ -325,28 +238,24 @@ gulp.task "dev", gulp_shell.task [
 # TASKS: SYSTEM ###################################################################################
 
 
-# Even though we aren't using this at the moment, let's keep it here for future reference.
-# Note: it's no longer executed by the main tasks down below.
-# Here's where you'd add it back: gulp.series "compile-svga", "dev:watch", "watch", "serve"
-#
-# gulp.task "dev:watch", (cb)->
-#   gulp.src paths.dev.gulp
-#     .on "data", (chunk)->
-#       folder = chunk.path.replace "/gulpfile.coffee", ""
-#       process.chdir folder
-#       child = spawn "gulp", ["default"]
-#       child.stdout.on "data", (data)->
-#         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
-#       process.chdir "../.."
-#   cb()
-
-
 gulp.task "del:public", ()->
   del "public"
 
 
 gulp.task "del:deploy", ()->
   del "deploy"
+
+
+gulp.task "dev:watch", (cb)->
+  gulp.src paths.dev.gulp
+    .on "data", (chunk)->
+      folder = chunk.path.replace "/gulpfile.coffee", ""
+      process.chdir folder
+      child = spawn "gulp", ["watch"]
+      child.stdout.on "data", (data)->
+        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
+      process.chdir "../.."
+  cb()
 
 
 gulp.task "prod:setup", (cb)->
@@ -386,13 +295,15 @@ gulp.task "serve", ()->
 gulp.task "watch", (cb)->
   watching = true
   gulp.watch paths.dev.watch, gulp.series "dev"
-  gulp.watch paths.svg, gulp.series "beautify-svg", "compile-svga", "reload"
-  gulp.watch paths.watch, gulp.series "compile-svga", "reload"
+  gulp.watch paths.coffee, gulp.series "coffee:source"
+  gulp.watch paths.libs, gulp.series "wrap-svg", "reload"
+  gulp.watch paths.wrapper, gulp.series "wrap-svg", "reload"
+  gulp.watch paths.svg, gulp.series "beautify-svg", "wrap-svg", "reload"
   cb()
 
 
 gulp.task "recompile",
-  gulp.series "del:public", "dev", "beautify-svg", "compile-svga"
+  gulp.series "del:public", "dev", "beautify-svg", "coffee:source", "wrap-svg"
 
 
 gulp.task "prod",
@@ -400,4 +311,4 @@ gulp.task "prod",
 
 
 gulp.task "default",
-  gulp.series "recompile", "watch", "serve"
+  gulp.series "dev:watch", "recompile", "watch", "serve"
