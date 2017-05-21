@@ -13,6 +13,7 @@ gulp_natural_sort = require "gulp-natural-sort"
 gulp_notify = require "gulp-notify"
 gulp_rename = require "gulp-rename"
 gulp_replace = require "gulp-replace"
+gulp_rev_all = require "gulp-rev-all"
 gulp_sass = require "gulp-sass"
 gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
@@ -27,9 +28,7 @@ spawn = require("child_process").spawn
 # STATE ##########################################################################################
 
 
-hashName = null
 prod = false
-svgName = null
 watching = false
 
 
@@ -305,26 +304,17 @@ gulp.task "compile-svga", ()->
       js2svg: pretty: !prod
       plugins: config.svgmin.publicPlugins
     .pipe gulp_replace "</svg>", "</svg>\n<script>\n<!-- libs:js --><!-- endinject -->\n<!-- svga:js --><!-- endinject -->\n</script>"
-    .pipe gulp_inject wrapCSS(css), name: "svga", transform: fileContents
-    .pipe gulp_inject wrapJS(jsLibs), name: "libs", transform: fileContents
+    .pipe gulp_inject wrapCSS(css), name: "svga"
+    .pipe gulp_inject wrapJS(jsLibs), name: "libs"
     .pipe gulp_inject wrapJS(js), name: "svga", transform: fileContents
     .pipe gulp_inject svgPack, name: "pack", transform: fileContents
     .pipe gulp_replace /<!--.*?-->/g, ""
   
   gulp.src paths.wrapper
-    .pipe gulp_inject compiledSvg,
-      name: "wrapper"
-      transform: (filePath, file)->
-        if prod
-          md5 = crypto.createHash "md5"
-          md5.update file.contents, "utf8"
-          hashName = md5.digest "hex"
-        svgName = path.basename filePath
-        return file.contents.toString "utf8"
+    .pipe gulp_inject compiledSvg, name: "wrapper", transform: fileContents
     .pipe gulp_rename (path)->
-      if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
-      path.basename = svgName.replace ".svg", ""
-      path.basename += ".min" if prod
+      path.basename = "index"
+      path.extname = ".html"
     .pipe gulp.dest "public"
     .pipe notify "SVGA"
 
@@ -372,24 +362,27 @@ gulp.task "reload", (cb)->
 
 
 gulp.task "rev", ()->
-  gulp.src "public/**/*"
+  gulp.src "public/**"
+    .pipe gulp_rev_all.revision
+      transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
+        rev.replace /.*\//, ""
+      transformFilename: (file, hash)->
+        name = file.revHash + file.extname
+        gulp_shell.task("mkdir -p deploy/index && touch deploy/index/#{name}")() if file.revPathOriginal.indexOf("/public/index.html") > 0
+        name
     .pipe gulp_rename (path)->
-      path.basename = hashName
-      gulp_shell.task("rm -rf .deploy && mkdir .deploy && touch .deploy/#{hashName}.html")()
-    .pipe gulp.dest "deploy"
+      path.dirname = ""
+      path
+    .pipe gulp.dest "deploy/all"
 
 
 gulp.task "serve", ()->
-  if not svgName? then throw new Error "\n\nYou must have an SVG file in your source folder.\n"
   browser_sync.init
     ghostMode: false
     notify: false
-    server:
-      baseDir: "public"
-      index: svgName.replace ".svg", ".html" # Set by compile-svg
+    server: baseDir: "public"
     ui: false
-    watchOptions:
-      ignoreInitial: true
+    watchOptions: ignoreInitial: true
 
 
 gulp.task "watch", (cb)->
