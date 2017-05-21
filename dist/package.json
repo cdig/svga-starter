@@ -4,7 +4,7 @@
   "description": "An SVGA Project",
   "license": "UNLICENSED",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "beepbeep": "latest",
     "browser-sync": "latest",
     "chalk": "latest",
@@ -15,12 +15,13 @@
     "gulp-changed": "latest",
     "gulp-coffee": "latest",
     "gulp-concat": "latest",
+    "gulp-htmlmin": "latest",
     "gulp-inject": "latest",
     "gulp-natural-sort": "latest",
     "gulp-notify": "latest",
     "gulp-rename": "latest",
     "gulp-replace": "latest",
-    "gulp-rev-all": "latest",
+    "gulp-rev-all": "^0.9.7",
     "gulp-sass": "latest",
     "gulp-shell": "latest",
     "gulp-sourcemaps": "latest",
