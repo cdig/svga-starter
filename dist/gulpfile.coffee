@@ -251,7 +251,7 @@ gulp.task "dev:watch", (cb)->
     .on "data", (chunk)->
       folder = chunk.path.replace "/gulpfile.coffee", ""
       process.chdir folder
-      child = spawn "gulp", ["watch"]
+      child = spawn "gulp", ["default"]
       child.stdout.on "data", (data)->
         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
