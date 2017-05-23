@@ -5,28 +5,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "beepbeep": "latest",
-    "browser-sync": "latest",
-    "chalk": "latest",
-    "coffee-script": "latest",
-    "del": "latest",
-    "gulp": "github:gulpjs/gulp#4.0",
-    "gulp-changed": "latest",
-    "gulp-coffee": "latest",
-    "gulp-concat": "latest",
-    "gulp-htmlmin": "latest",
-    "gulp-inject": "latest",
-    "gulp-natural-sort": "latest",
-    "gulp-notify": "latest",
-    "gulp-rename": "latest",
-    "gulp-replace": "latest",
-    "gulp-rev-all": "latest",
-    "gulp-sass": "latest",
-    "gulp-shell": "latest",
-    "gulp-sourcemaps": "latest",
-    "gulp-svgmin": "latest",
-    "gulp-uglify": "latest",
-    "svga": "cdig/svga#v4",
-    "take-and-make": "cdig/take-and-make#v4"
+    "cd-gulp": "cdig/cd-gulp#v4",
+    "svga": "cdig/svga#v4"
   }
 }
