@@ -1,4 +1,4 @@
-# SVGA Starter v4
+# SVGA Starter v4.1
 This repo contains the default files needed for a new [SVGA](https://github.com/cdig/svga) project.
 It's used by the `cdig` CLI tool.
 
