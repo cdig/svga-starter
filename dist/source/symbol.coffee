@@ -1,4 +1,4 @@
-Take ["Control","Ease","FlowArrows","Pressure","Symbol"],(Control,Ease,FlowArrows,Pressure,Symbol)->
+Take ["Control","Ease","FlowArrows","HUD","Pressure","Symbol"],(Control,Ease,FlowArrows,HUD,Pressure,Symbol)->
   Symbol "SYMBOL_NAME", [], (element)->
     return scope =
       setup: ()->
