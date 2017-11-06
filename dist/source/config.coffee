@@ -1,7 +1,8 @@
+# For more info, see here: https://github.com/cdig/svga/wiki#Config
+
 Make "Config",
   background: true
   nav: true
-  # controlPanel:
-  #   vertical: true
-  #   x: 0
-  #   y: 0
+  meta:
+    title: []
+    info: []
