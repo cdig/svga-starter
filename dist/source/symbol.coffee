@@ -1,4 +1,4 @@
-Take ["Control","Ease","FlowArrows","Highlight","HUD","Pressure","Symbol"],(Control,Ease,FlowArrows,Highlight,HUD,Pressure,Symbol)->
+Take ["Control", "Ease", "FlowArrows", "Highlight", "HUD", "Pressure", "Symbol"], (Control, Ease, FlowArrows, Highlight, HUD, Pressure, Symbol)->
   Symbol "SYMBOL_NAME", [], (element)->
     setup: ()->
       # Code that runs once, right at the start.
