@@ -1,4 +1,7 @@
-Take ["Control","Ease","FlowArrows","HUD","Pressure","Symbol"],(Control,Ease,FlowArrows,HUD,Pressure,Symbol)->
+Take ["Control","Ease","FlowArrows","Highlight","HUD","Pressure","Symbol"],(Control,Ease,FlowArrows,Highlight,HUD,Pressure,Symbol)->
   Symbol "SYMBOL_NAME", [], (element)->
     setup: ()->
-      # This one's on you.
+      # Code that runs once, right at the start.
+    
+    tick: (time, dt)->
+      # Code that runs every frame.
