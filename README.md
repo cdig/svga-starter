@@ -5,4 +5,4 @@ It's used by the `cdig` CLI tool.
 Check the [SVGA Wiki](https://github.com/cdig/svga/wiki) for more info.
 
 ## License
-Copyright (c) 2015-2017 CD Industrial Group Inc. http://www.cdiginc.com
+Copyright (c) 2015-2021 CD Industrial Group Inc. http://www.cdiginc.com
