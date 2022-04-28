@@ -7,5 +7,8 @@
   "dependencies": {
     "cd-core": "cdig/cd-core#v4-1",
     "svga": "cdig/svga#v4-1"
+  },
+  "resolutions": {
+    "sass": "1.49.9"
   }
 }
