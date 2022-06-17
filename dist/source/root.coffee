@@ -5,7 +5,7 @@ Take ["Control", "Convert", "Ease", "FlowArrows", "Highlight", "HUD", "Pressure"
       
       
       
-    tick: (time, dt)->
+    ms: ()->
       
       
       
