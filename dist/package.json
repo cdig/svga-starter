@@ -10,5 +10,8 @@
   },
   "resolutions": {
     "sass": "1.49.9"
+  },
+  "overrides": {
+    "sass": "1.49.9"
   }
 }
